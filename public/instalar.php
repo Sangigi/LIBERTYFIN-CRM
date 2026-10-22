@@ -153,7 +153,7 @@ function pintar(string $titulo, string $cuerpo): void {
     ?><!DOCTYPE html>
 <html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LibertyFin · Instalación</title>
+<title>LibertyFin CRM · Instalación</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%2327ae60'/><text x='50' y='50' font-family='sans-serif' font-size='62' font-weight='800' fill='white' text-anchor='middle' dominant-baseline='central'>L</text></svg>">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -186,7 +186,7 @@ a{color:#1f8b4d}
 </style></head><body>
 <div class="caja">
   <div class="marca"><span class="g">L</span>
-    <div><b>LibertyFin</b><small>Instalación</small></div></div>
+    <div><b>LibertyFin CRM</b><small>Instalación</small></div></div>
   <h1><?= $titulo ?></h1>
   <?= $cuerpo ?>
 </div></body></html><?php
