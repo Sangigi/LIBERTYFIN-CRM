@@ -176,11 +176,26 @@ final class CrearEmpresa
     public function aprobar($id, $raiz, $revisorId)
     {
         $this->asegurar();
-        $cp = Integraciones::de('cpanel');
-        if (!$cp) {
+        $cp = Integraciones::de('cpanel') ?: [];
+
+        // Con `uapi` aquí mismo no hacen falta credenciales: la llamada
+        // se hace localmente como el usuario que ya somos. Lo único que
+        // se sigue necesitando es el PREFIJO, que cPanel antepone a todo
+        // lo que crea, y que sale del propio usuario del sistema.
+        $local = self::uapiLocal();
+        if (!$local && empty($cp['token'])) {
             throw new \InvalidArgumentException(
-                'Faltan las credenciales de cPanel en config/integraciones.php: '
-                . 'sin ellas no se puede crear la base de la empresa');
+                'No hay forma de crear la base: ni `uapi` en este servidor, ni '
+                . 'credenciales de cPanel en config/integraciones.php. '
+                . 'Comprueba con: php bin/probar-cpanel.php');
+        }
+        if (empty($cp['usuario'])) {
+            $cp['usuario'] = self::usuarioDelSistema();
+        }
+        if (empty($cp['usuario'])) {
+            throw new \InvalidArgumentException(
+                'No se pudo saber el usuario de cPanel, que es el prefijo de las '
+                . 'bases. Ponlo en config/integraciones.php → cpanel → usuario.');
         }
 
         $st = $this->principal->prepare("SELECT * FROM solicitudes_empresa WHERE id = ?");
@@ -322,10 +337,82 @@ final class CrearEmpresa
         return $r;
     }
 
+    /**
+     * El usuario de la cuenta, que es el prefijo de toda base que cPanel
+     * cree. Se saca del dueño del proceso, no de la configuración: así
+     * una instalación dentro de su propia cuenta no necesita escribirlo.
+     */
+    private static function usuarioDelSistema()
+    {
+        if (function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
+            $u = @posix_getpwuid(posix_geteuid());
+            if (!empty($u['name'])) return $u['name'];
+        }
+        $u = get_current_user();
+        return $u !== '' ? $u : null;
+    }
+
+    /**
+     * ¿Está `uapi` aquí mismo y lo podemos ejecutar?
+     *
+     * Cuando el sistema corre DENTRO de la misma cuenta de cPanel cuya
+     * base queremos crear —que es el caso normal—, dar la vuelta por
+     * HTTPS al puerto 2083 es cruzar la calle dando la vuelta a la
+     * manzana, y encima se tropieza con todo lo que hay en el camino: el
+     * certificado, cPHulk, un WAF delante, o una restricción de IP en el
+     * token. Un «403 Access denied» a secas suele ser alguna de esas, y
+     * no el token.
+     *
+     * `uapi` es el MISMO API, ejecutado localmente como el usuario que
+     * ya somos. No pide token, ni puerto, ni certificado.
+     */
+    private static function uapiLocal()
+    {
+        static $ruta = false;
+        if ($ruta !== false) return $ruta;
+
+        $ruta = null;
+        if (!function_exists('shell_exec')) return $ruta;
+        // Si PHP tiene shell_exec deshabilitado, esto llega vacío.
+        $deshabilitadas = array_map('trim', explode(',', (string)ini_get('disable_functions')));
+        if (in_array('shell_exec', $deshabilitadas, true)) return $ruta;
+
+        foreach (['/usr/local/cpanel/bin/uapi', '/usr/bin/uapi'] as $c) {
+            if (is_executable($c)) { $ruta = $c; break; }
+        }
+        return $ruta;
+    }
+
+    /** Una llamada a uapi local. Devuelve el mismo arreglo que la de red. */
+    private static function porUapi($bin, $modulo, $funcion, array $params)
+    {
+        $cmd = escapeshellcmd($bin) . ' --output=json ' . escapeshellarg($modulo)
+             . ' ' . escapeshellarg($funcion);
+        foreach ($params as $k => $v) {
+            $cmd .= ' ' . escapeshellarg($k . '=' . $v);
+        }
+        $salida = shell_exec($cmd . ' 2>&1');
+        $j = json_decode((string)$salida, true);
+
+        if (!empty($j['result']['status'])) return ['ok' => true, 'error' => null];
+        if (!empty($j['result']['errors'][0])) {
+            return ['ok' => false, 'error' => $j['result']['errors'][0]];
+        }
+        if (!empty($j['status'])) return ['ok' => true, 'error' => null];
+        if (!empty($j['errors'][0])) return ['ok' => false, 'error' => $j['errors'][0]];
+
+        $trozo = trim(preg_replace('/\s+/', ' ', mb_substr((string)$salida, 0, 300)));
+        return ['ok' => false, 'error' => 'uapi: ' . ($trozo ?: 'sin respuesta')];
+    }
+
     /** Llama a la API de cPanel para crear la base y darle permisos. */
     private static function crearBaseEnCpanel(array $cp, $sufijo)
     {
-        $llamar = function ($modulo, $funcion, $params) use ($cp) {
+        // Local primero: menos piezas que se puedan romper.
+        $bin = self::uapiLocal();
+
+        $llamar = function ($modulo, $funcion, $params) use ($cp, $bin) {
+            if ($bin) return self::porUapi($bin, $modulo, $funcion, $params);
             $url = 'https://' . $cp['host'] . ':2083/execute/' . $modulo . '/' . $funcion
                  . '?' . http_build_query($params);
             $ch = curl_init($url);

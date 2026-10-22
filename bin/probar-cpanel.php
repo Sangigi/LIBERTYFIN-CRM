@@ -17,6 +17,47 @@
 if (PHP_SAPI !== 'cli') { http_response_code(403); exit("Solo desde la terminal.\n"); }
 
 $raiz = dirname(__DIR__);
+
+// ── Primero: ¿hace falta siquiera un token? ──
+//
+// Si `uapi` está en este servidor, el sistema lo usa y no toca la red:
+// ni puerto 2083, ni certificado, ni token. Decirlo antes de nada evita
+// que alguien pierda la tarde peleando con una credencial que no va a
+// usarse.
+$bin = null;
+foreach (['/usr/local/cpanel/bin/uapi', '/usr/bin/uapi'] as $c) {
+    if (is_executable($c)) { $bin = $c; break; }
+}
+$shell = function_exists('shell_exec')
+      && !in_array('shell_exec', array_map('trim', explode(',', (string)ini_get('disable_functions'))), true);
+
+echo "\n";
+if ($bin && $shell) {
+    $usuario = function_exists('posix_getpwuid')
+             ? (@posix_getpwuid(posix_geteuid())['name'] ?? get_current_user())
+             : get_current_user();
+    echo "  ✓ `uapi` está aquí: $bin\n";
+    echo "    El sistema lo usará y NO necesita token ni puerto 2083.\n";
+    echo "    Las bases nuevas se llamarán: {$usuario}_<loquesea>\n\n";
+    echo "    Probando una llamada local de solo lectura…\n";
+    $salida = shell_exec(escapeshellcmd($bin) . ' --output=json Mysql list_databases 2>&1');
+    $j = json_decode((string)$salida, true);
+    $ok = !empty($j['result']['status']) || !empty($j['status']);
+    if ($ok) {
+        $datos = $j['result']['data'] ?? ($j['data'] ?? []);
+        echo "    ✓ Funciona. Bases que ve: " . count($datos) . "\n\n";
+        echo "  No hace falta nada más. Puedes aprobar empresas.\n\n";
+        exit(0);
+    }
+    echo "    ✗ uapi respondió algo inesperado:\n";
+    echo "      " . trim(preg_replace('/\s+/', ' ', mb_substr((string)$salida, 0, 300))) . "\n\n";
+    echo "  Se probará el camino por red, más abajo.\n";
+} else {
+    echo "  · `uapi` no está disponible aquí"
+       . ($bin && !$shell ? ' (existe, pero shell_exec está deshabilitado)' : '')
+       . ".\n    Hará falta token.\n";
+}
+
 $ruta = $raiz . '/config/integraciones.php';
 if (!is_file($ruta)) {
     exit("\n  Falta config/integraciones.php\n"
