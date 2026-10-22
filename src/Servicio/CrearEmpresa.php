@@ -395,8 +395,23 @@ final class CrearEmpresa
         $j = json_decode((string)$salida, true);
 
         if (!empty($j['result']['status'])) return ['ok' => true, 'error' => null];
+
+        // QUIÉN EJECUTA DECIDE A QUÉ CUENTA PERTENECES.
+        //
+        // `uapi` no pregunta por usuario: lo deduce del UID del proceso.
+        // Desde la terminal eres el dueño de la cuenta y funciona; desde
+        // el navegador, PHP puede correr como otro (`nobody`, el usuario
+        // del pool, otra cuenta), y entonces cPanel contesta «The request
+        // failed» con un identificador y nada más.
+        //
+        // El mismo comando, dos resultados, según quién lo lance. Decir
+        // el usuario aquí ahorra la tarde de buscarlo en el log de cPanel.
+        $quien = self::usuarioDelSistema() ?: 'desconocido';
+
         if (!empty($j['result']['errors'][0])) {
-            return ['ok' => false, 'error' => $j['result']['errors'][0]];
+            return ['ok' => false, 'error' => $j['result']['errors'][0]
+                . ' · lo ejecutó el usuario «' . $quien . '»'
+                . ' (si en la terminal funciona, PHP corre como otro usuario)'];
         }
         if (!empty($j['status'])) return ['ok' => true, 'error' => null];
         if (!empty($j['errors'][0])) return ['ok' => false, 'error' => $j['errors'][0]];
@@ -412,7 +427,16 @@ final class CrearEmpresa
         $bin = self::uapiLocal();
 
         $llamar = function ($modulo, $funcion, $params) use ($cp, $bin) {
-            if ($bin) return self::porUapi($bin, $modulo, $funcion, $params);
+            if ($bin) {
+                $r = self::porUapi($bin, $modulo, $funcion, $params);
+                // Si el camino local sale bien, o no hay token con el que
+                // reintentar, esto es la respuesta definitiva.
+                if ($r['ok'] || empty($cp['token'])) return $r;
+                // Si falló y SÍ hay token, se reintenta por red. El caso
+                // típico: PHP corre como otro usuario, así que `uapi` no
+                // sabe de qué cuenta hablamos, pero el token sí lo dice.
+                $local = $r['error'];
+            }
             $url = 'https://' . $cp['host'] . ':2083/execute/' . $modulo . '/' . $funcion
                  . '?' . http_build_query($params);
             $ch = curl_init($url);
@@ -456,8 +480,12 @@ final class CrearEmpresa
                 : 'JSON sin «status» ni «errors»';
             $trozo = trim(preg_replace('/\s+/', ' ', mb_substr((string)$r, 0, 300)));
 
-            return ['ok' => false,
-                    'error' => sprintf('HTTP %d · %s · respuesta: %s', $http, $pista, $trozo)];
+            $msg = sprintf('HTTP %d · %s · respuesta: %s', $http, $pista, $trozo);
+            // Si antes se intentó en local, su error va delante: los dos
+            // juntos cuentan la historia completa, y por separado ninguno
+            // basta para saber qué pasó.
+            if (isset($local)) $msg = 'uapi local: ' . $local . ' || por red: ' . $msg;
+            return ['ok' => false, 'error' => $msg];
         };
 
         $r = $llamar('Mysql', 'create_database', ['name' => $cp['usuario'] . '_' . $sufijo]);
