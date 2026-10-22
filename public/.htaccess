@@ -1,0 +1,31 @@
+RewriteEngine On
+
+# La API se identifica con «Authorization: Bearer lfk_…». Cuando PHP corre
+# como CGI/FastCGI (común en cPanel), Apache no le pasa esa cabecera; esta
+# regla la copia a una variable que PHP sí recibe.
+RewriteCond %{HTTP:Authorization} .
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# Las páginas de la landing se enlazan sin extensión (pages/precios):
+# si existe el .html, se sirve ese. Si no existe, no hace nada.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.+)$ $1.html [L]
+
+# Todo a index.php salvo archivos reales (css, js, imágenes)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+    Header append Vary Accept-Encoding
+</IfModule>
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|woff2?)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>
+Options -Indexes
