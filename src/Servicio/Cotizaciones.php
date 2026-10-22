@@ -37,7 +37,19 @@ final class Cotizaciones
     const VIGENCIA_DIAS = 15;
 
     private $db;
-    public function __construct(PDO $db) { $this->db = $db; }
+    /** @var \LibertyFin\Dominio\Alcance */
+    private $alcance;
+
+    /**
+     * El alcance entra por el constructor y no se lee de la sesión aquí:
+     * una prueba, un trabajo de fondo o la API pueden pedir «todo» o
+     * «lo de este usuario» sin que haya sesión abierta.
+     */
+    public function __construct(PDO $db, \LibertyFin\Dominio\Alcance $alcance = null)
+    {
+        $this->db = $db;
+        $this->alcance = $alcance ?: \LibertyFin\Dominio\Alcance::deSesion();
+    }
 
     // ════════════════════════════════════════════════════════
     //  LEER
@@ -61,6 +73,10 @@ final class Cotizaciones
             $w[] = '(c.folio LIKE ? OR c.cliente_nombre LIKE ?)';
             $p[] = '%' . $q . '%'; $p[] = '%' . $q . '%';
         }
+        // Solo las cotizaciones de quien pregunta, salvo que alcance todo.
+        $alc = $this->alcance->filtroPos('responsable_id', 'c');
+        if ($alc !== '') { $w[] = ltrim(substr($alc, 5)); $p[] = $this->alcance->valores()[0]; }
+
         $st = $this->db->prepare("
             SELECT c.*, v.codigo_venta,
                    (SELECT COUNT(*) FROM lf_cotizacion_lineas l WHERE l.cotizacion_id = c.id) AS renglones
@@ -80,8 +96,14 @@ final class Cotizaciones
     {
         $r = ['abiertas' => 0, 'monto_abierto' => 0.0, 'vencidas' => 0, 'aceptadas_mes' => 0, 'monto_aceptado_mes' => 0.0];
         $mes = date('Y-m-01');
-        foreach ($this->db->query("SELECT estado, vigencia, total, actualizado_en, creado_en FROM lf_cotizaciones")
-                          ->fetchAll(PDO::FETCH_ASSOC) as $c) {
+        // query() no admite parámetros, así que el resumen pasa a
+        // prepare(): el filtro del alcance lleva valor y sin él se
+        // contarían las cotizaciones de todo el despacho.
+        $st = $this->db->prepare("SELECT estado, vigencia, total, actualizado_en, creado_en
+                                    FROM lf_cotizaciones WHERE 1 = 1"
+                                  . $this->alcance->filtroPos('responsable_id'));
+        $st->execute($this->alcance->valores());
+        foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $c) {
             if (in_array($c['estado'], self::ABIERTAS, true)) {
                 if (self::vencida($c)) { $r['vencidas']++; continue; }
                 $r['abiertas']++; $r['monto_abierto'] += (float)$c['total'];
@@ -96,8 +118,9 @@ final class Cotizaciones
     public function una($id)
     {
         $st = $this->db->prepare("SELECT c.*, v.codigo_venta FROM lf_cotizaciones c
-                                  LEFT JOIN ventas v ON v.id = c.venta_id WHERE c.id = ?");
-        $st->execute([(int)$id]);
+                                  LEFT JOIN ventas v ON v.id = c.venta_id WHERE c.id = ?"
+                                  . $this->alcance->filtroPos('responsable_id', 'c'));
+        $st->execute(array_merge([(int)$id], $this->alcance->valores()));
         $c = $st->fetch(PDO::FETCH_ASSOC);
         if (!$c) return null;
         $st = $this->db->prepare("SELECT producto_id, nombre, cantidad, precio FROM lf_cotizacion_lineas

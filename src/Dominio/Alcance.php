@@ -94,6 +94,43 @@ final class Alcance
         return ['alc_' . $this->columnaSegura($columna) => $this->usuarioId];
     }
 
+    // ════════════════════════════════════════════════════════
+    //  LA VARIANTE POSICIONAL
+    // ════════════════════════════════════════════════════════
+    //
+    // Datos\Repo arma sus consultas con marcadores `?` y cuenta cuántos
+    // hay para avisar si no cuadran con los parámetros. Mezclar ahí un
+    // marcador con nombre rompe esa cuenta y, peor, PDO no deja usar las
+    // dos formas en la misma consulta.
+    //
+    // Por eso filtro() y filtroPos() conviven: quien prepara a mano usa
+    // el primero, quien hereda de Repo usa el segundo. No es duplicación
+    // por descuido; es que son dos protocolos distintos.
+
+    /** Como filtro(), pero con `?`. Para los repos que heredan de Repo. */
+    public function filtroPos($columna, $tabla = null)
+    {
+        if ($this->esTotal()) return '';
+        $col = $this->columnaSegura($columna);
+        $pre = $tabla !== null ? $this->columnaSegura($tabla) . '.' : '';
+        return ' AND ' . $pre . $col . ' = ?';
+    }
+
+    /**
+     * El valor que acompaña a filtroPos(), para añadirlo al array de
+     * parámetros. Vacío si no limita, así el `array_merge` no cambia
+     * nada cuando quien pregunta es un admin.
+     *
+     * Devuelve una LISTA de un elemento y no el valor suelto, para que
+     * el sitio donde se usa no tenga que preguntar si limita o no:
+     *
+     *     $p = array_merge($p, $alcance->valores());
+     */
+    public function valores()
+    {
+        return $this->esTotal() ? [] : [$this->usuarioId];
+    }
+
     /**
      * ¿Este registro es alcanzable? Para la ficha de uno solo, donde no
      * hay WHERE que filtrar.

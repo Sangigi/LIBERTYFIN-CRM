@@ -35,6 +35,17 @@ $aproposito = [
     '/Service/ConsultaClabe', '/Service/PagoClabe', '/Service/ConsultaReferencia',
     '/Service/PagoReferencia', '/Service/PagoLinea', '/Service/EntregarPagoLiga',
     '/Service/CancelaPago',
+    // Los webhooks de canales: quien llama es un servidor de Meta,
+    // TikTok o Google, sin sesión y sin usuario. No pueden llevar
+    // permiso porque no hay a quién preguntárselo.
+    //
+    // Su puerta son DOS cosas, las dos en CanalesControlador: el secreto
+    // de la URL (la base de la empresa) y la firma HMAC del cuerpo, que
+    // se comprueba contra el crudo antes de tocar la base. Google Ads no
+    // firma por cabecera, así que ahí se compara la clave que viene
+    // dentro del JSON.
+    '/canales/{empresa}/meta', '/canales/{empresa}/tiktok',
+    '/canales/{empresa}/linkedin', '/canales/{empresa}/google',
     // El panel bifurca según el nivel del rol.
     '/panel',
     // Sobre SÍ MISMO: cualquiera con sesión. Pedir permiso aquí dejaría a

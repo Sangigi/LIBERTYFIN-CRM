@@ -13,6 +13,21 @@ namespace LibertyFin\Datos;
  */
 final class VentaRepo extends Repo
 {
+
+    /** @var \LibertyFin\Dominio\Alcance */
+    private $alcance;
+
+    /**
+     * El alcance entra por el constructor, no se lee de la sesión aquí:
+     * una prueba, un trabajo de fondo o la API pueden pedir «todo» o
+     * «lo de este usuario» sin depender de que haya sesión abierta.
+     */
+    public function __construct(\PDO $db, \LibertyFin\Dominio\Alcance $alcance = null)
+    {
+        parent::__construct($db);
+        $this->alcance = $alcance ?: \LibertyFin\Dominio\Alcance::deSesion();
+    }
+
     private function rango($desde, $hasta)
     {
         $w = []; $p = [];
@@ -85,6 +100,10 @@ final class VentaRepo extends Repo
             $w[] = '(v.codigo_venta LIKE ? OR c.nombre LIKE ? OR v.descripcion LIKE ?)';
             $l = '%' . $filtros['buscar'] . '%'; $p[] = $l; $p[] = $l; $p[] = $l;
         }
+        // Solo los contratos de quien pregunta, salvo que alcance todo.
+        $alc = $this->alcance->filtroPos('responsable_id', 'v');
+        if ($alc !== '') { $w[] = ltrim(substr($alc, 5)); $p[] = $this->alcance->valores()[0]; }
+
         $where = $w ? 'WHERE ' . implode(' AND ', $w) : '';
         $jc = self::JOIN_COBRADO;
 
@@ -132,10 +151,10 @@ final class VentaRepo extends Repo
             LEFT JOIN ( SELECT venta_id, SUM(monto) AS cobrado FROM venta_pagos
                         WHERE cancelado = 0 GROUP BY venta_id ) pg ON pg.venta_id = v.id
             WHERE v.estado <> 'cancelada'
-              AND v.total - COALESCE(pg.cobrado,0) > 0.01
+              AND v.total - COALESCE(pg.cobrado,0) > 0.01"
+            . $this->alcance->filtroPos('responsable_id', 'v') . "
             ORDER BY saldo DESC
-            LIMIT " . (int)$tope . "
-        ");
+            LIMIT " . (int)$tope, $this->alcance->valores());
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -160,7 +179,8 @@ final class VentaRepo extends Repo
             LEFT JOIN ( SELECT venta_id, SUM(monto) gastos FROM gastos
                         WHERE tipo = 'manual' AND categoria <> 'Costo de venta'
                         GROUP BY venta_id ) g ON g.venta_id = v.id
-            WHERE v.id = ?", [(int)$id]);
+            WHERE v.id = ?" . $this->alcance->filtroPos('responsable_id', 'v'),
+            array_merge([(int)$id], $this->alcance->valores()));
     }
 
     public function lineas($id)
@@ -219,6 +239,11 @@ final class VentaRepo extends Repo
             $w[] = '(v.codigo_venta LIKE ? OR c.nombre LIKE ? OR v.descripcion LIKE ?)';
             $l = '%' . $filtros['buscar'] . '%'; $p[] = $l; $p[] = $l; $p[] = $l;
         }
+        // El MISMO filtro que listado(): si el conteo no se limita igual,
+        // la paginación promete páginas que vienen vacías.
+        $alc = $this->alcance->filtroPos('responsable_id', 'v');
+        if ($alc !== '') { $w[] = ltrim(substr($alc, 5)); $p[] = $this->alcance->valores()[0]; }
+
         $where = $w ? 'WHERE ' . implode(' AND ', $w) : '';
         $jc = self::JOIN_COBRADO;
         return (int)$this->valor("
@@ -240,9 +265,10 @@ final class VentaRepo extends Repo
                         FROM venta_pagos WHERE cancelado = 0 GROUP BY venta_id ) pg
                    ON pg.venta_id = v.id
             WHERE v.estado <> 'cancelada'
-              AND v.total - COALESCE(pg.cobrado,0) > 0.01
+              AND v.total - COALESCE(pg.cobrado,0) > 0.01"
+            . $this->alcance->filtroPos('responsable_id', 'v') . "
             ORDER BY dias DESC, saldo DESC
-            LIMIT " . (int)$tope);
+            LIMIT " . (int)$tope, $this->alcance->valores());
     }
 
     // ─────────────────────────────────────────────────────────────

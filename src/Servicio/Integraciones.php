@@ -19,17 +19,57 @@ final class Integraciones
         // Emida pide cuatro datos, no tres. `merchant_id` identifica al
         // comercio y `clerk_password` a la terminal: son distintos de la
         // clave de la cuenta aunque el proveedor a veces los reparta igual.
-        'emida'         => ['Recargas telefónicas', 'Tiempo aire y pago de servicios',
-                            ['usuario','clave','merchant_id']],
-        'facturapi'     => ['Facturación CFDI', 'Timbrado de facturas',
-                            ['llave','organizacion']],
-        'spei'          => ['Ligas de pago SPEI', 'Cobro por transferencia',
+        // ── Lo que NO está aquí, y por qué ──
+        //
+        // Emida (recargas), Facturapi (CFDI) y PayPal (ligas con
+        // tarjeta) se fueron con el POS: las tres mueven o comprueban
+        // dinero del cliente de la empresa, y el CRM no cobra.
+        //
+        // `spei` SÍ se queda, pero solo para la SUSCRIPCIÓN: es la
+        // empresa pagándole su plan a LibertyFin, no la empresa
+        // cobrándole a su cliente. Ver PagosEntrantesControlador.
+        'spei'          => ['Suscripción por SPEI', 'Cobro del plan de LibertyFin CRM',
                             ['usuario','clave','integracion_id']],
-        'domiciliacion' => ['Cargos recurrentes', 'Domiciliación de mensualidades',
+        'domiciliacion' => ['Cargos recurrentes', 'Domiciliación del plan',
                             ['usuario','clave','integracion_id']],
-        'paypal'        => ['PayPal', 'Ligas de pago con tarjeta',
-                            ['cliente','secreto']],
-        'smtp'          => ['Correo saliente', 'Envío de tickets y avisos',
+
+        // LibertyPay: la pasarela propia para cobros con tarjeta.
+        //
+        // AQUÍ SOLO SIRVE PARA LA SUSCRIPCIÓN, por la misma razón que
+        // spei. El cobro con tarjeta al cliente de la empresa lo hace
+        // LibertyFin POS, que es quien tiene caja y quien timbra.
+        //
+        // Cuando el CRM necesite saber si un contrato ya se pagó con
+        // tarjeta, NO le pregunta a LibertyPay: le pregunta al POS por
+        // el estado de la venta (docs/api/estado-de-cobro.md). Un solo
+        // camino para un solo dato; dos fuentes es como dejan de cuadrar.
+        'libertypay'    => ['LibertyPay', 'Pago del plan con tarjeta',
+                            ['comercio','llave','secreto']],
+        // ══════════════════════════════════════════════════════
+        //  CAPTACIÓN DE LEADS
+        // ══════════════════════════════════════════════════════
+        //
+        // Esto es el corazón del CRM base, no un extra. Un despacho, una
+        // agencia y una inmobiliaria se diferencian en lo que hacen
+        // DESPUÉS del lead; en cómo les llega, no.
+        //
+        // Las seis entran por el mismo sitio —Canales\Entrada— y salen
+        // como prospecto. Lo que cambia entre ellas es el sobre, no la
+        // carta: por eso el módulo las trata igual en cuanto cruzan.
+        //
+        // Meta (WhatsApp, Instagram y Facebook) comparte credenciales:
+        // un solo token de app y un solo secreto de webhook sirven para
+        // las tres, y pedirlos tres veces solo invita a equivocarse.
+        'meta'          => ['WhatsApp, Instagram y Facebook',
+                            'Mensajes y formularios de Meta como prospectos',
+                            ['token','secreto_webhook','id_app']],
+        'tiktok'        => ['TikTok Lead Generation', 'Formularios de TikTok como prospectos',
+                            ['token','id_anunciante']],
+        'linkedin'      => ['LinkedIn Lead Gen Forms', 'Formularios de LinkedIn como prospectos',
+                            ['token','id_cuenta']],
+        'google_ads'    => ['Google Ads Lead Forms', 'Formularios de Google Ads como prospectos',
+                            ['secreto_webhook','id_cliente']],
+        'smtp'          => ['Correo saliente', 'Envío de avisos y recordatorios',
                             ['host','usuario','clave']],
         'cpanel'        => ['cPanel', 'Alta de bases para empresas nuevas',
                             ['host','usuario','token']],

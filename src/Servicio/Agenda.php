@@ -43,7 +43,19 @@ final class Agenda
     const LIBERAN = ['cancelada', 'no_vino'];
 
     private $db;
-    public function __construct(PDO $db) { $this->db = $db; }
+    /** @var \LibertyFin\Dominio\Alcance */
+    private $alcance;
+
+    /**
+     * El alcance entra por el constructor y no se lee de la sesión aquí:
+     * una prueba, un trabajo de fondo o la API pueden pedir «todo» o
+     * «lo de este usuario» sin que haya sesión abierta.
+     */
+    public function __construct(PDO $db, \LibertyFin\Dominio\Alcance $alcance = null)
+    {
+        $this->db = $db;
+        $this->alcance = $alcance ?: \LibertyFin\Dominio\Alcance::deSesion();
+    }
 
     // ════════════════════════════════════════════════════════
     //  EL HORARIO
@@ -110,17 +122,26 @@ final class Agenda
             FROM lf_citas c
             LEFT JOIN comision_colaboradores cc ON cc.id = c.colaborador_id
             LEFT JOIN ventas v ON v.id = c.venta_id
-            WHERE c.inicio >= ? AND c.inicio < ?
+            WHERE c.inicio >= ? AND c.inicio < ?"
+            . $this->alcance->filtroPos('responsable_id', 'c') . "
             ORDER BY c.inicio, c.id");
-        $st->execute([$fecha . ' 00:00:00', date('Y-m-d', strtotime($fecha . ' +1 day')) . ' 00:00:00']);
+        $st->execute(array_merge(
+            [$fecha . ' 00:00:00', date('Y-m-d', strtotime($fecha . ' +1 day')) . ' 00:00:00'],
+            $this->alcance->valores()));
         return $st->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /** Cuántas citas vivas hay en cada día de un rango (para el calendario chico). */
     public function cuantasPorDia($desde, $hasta)
     {
-        $st = $this->db->prepare("SELECT inicio, estado FROM lf_citas WHERE inicio >= ? AND inicio < ?");
-        $st->execute([$desde . ' 00:00:00', date('Y-m-d', strtotime($hasta . ' +1 day')) . ' 00:00:00']);
+        // Cuenta lo MISMO que dia(): si no, el calendario marca cuatro
+        // citas y al abrir el día aparecen dos.
+        $st = $this->db->prepare("SELECT inicio, estado FROM lf_citas
+                                   WHERE inicio >= ? AND inicio < ?"
+                                 . $this->alcance->filtroPos('responsable_id'));
+        $st->execute(array_merge(
+            [$desde . ' 00:00:00', date('Y-m-d', strtotime($hasta . ' +1 day')) . ' 00:00:00'],
+            $this->alcance->valores()));
         $r = [];
         foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $c) {
             if (in_array($c['estado'], self::LIBERAN, true)) continue;
@@ -133,8 +154,9 @@ final class Agenda
     public function una($id)
     {
         $st = $this->db->prepare("SELECT c.*, cc.nombre AS especialista FROM lf_citas c
-                                  LEFT JOIN comision_colaboradores cc ON cc.id = c.colaborador_id WHERE c.id = ?");
-        $st->execute([(int)$id]);
+                                  LEFT JOIN comision_colaboradores cc ON cc.id = c.colaborador_id
+                                  WHERE c.id = ?" . $this->alcance->filtroPos('responsable_id', 'c'));
+        $st->execute(array_merge([(int)$id], $this->alcance->valores()));
         return $st->fetch(PDO::FETCH_ASSOC) ?: null;
     }
 
@@ -255,8 +277,13 @@ final class Agenda
     }
 
     /** La venta que la cobró. */
+    /**
+     * Leer y escribir se protegen por separado: que una() filtre impide
+     * VER la cita de otro, no marcarla mandando su id.
+     */
     public function atendida($id, $ventaId)
     {
+        if (!$this->una($id)) return false;
         $st = $this->db->prepare("UPDATE lf_citas SET estado = 'atendida', venta_id = ?
                                   WHERE id = ? AND estado NOT IN ('cancelada','atendida')");
         $st->execute([(int)$ventaId, (int)$id]);

@@ -143,6 +143,12 @@ final class Permisos
         'ver.agenda'          => ['admin','agente','asistente'],
         'editar.agenda'       => ['admin','agente'],
 
+        // ── Las verticales ──
+        'ver.legal'           => ['admin','agente','asistente'],
+        'editar.legal'        => ['admin','agente'],
+        'ver.seguros'         => ['admin','agente','asistente'],
+        'editar.seguros'      => ['admin','agente'],
+
         // ── Alcance: ¿todo, o solo lo mío? ──
         //
         // Esto NO es una sección más. Es la diferencia entre "Leo puede

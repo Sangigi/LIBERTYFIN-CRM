@@ -30,7 +30,7 @@ use PDO;
 final class Migraciones
 {
     /** Súbelo al agregar una migración nueva. */
-    const VERSION = 26;
+    const VERSION = 29;
 
     /**
      * La versión vive en `lf_ajustes`, no en `sistema_config`.
@@ -1171,7 +1171,17 @@ final class Migraciones
      */
     private static function v25(PDO $db)
     {
-        foreach (['clientes', 'ventas', 'citas'] as $t) {
+        // `citas` no existe: la tabla se llama lf_citas. Y las
+        // cotizaciones solo guardaban `creado_por` como texto libre, que
+        // no sirve para filtrar: dos personas con el mismo nombre, o un
+        // cambio de nombre, y el filtro deja de cuadrar.
+        // OJO: lf_trabajos NO va en esta lista. Ya tiene una columna
+        // `responsable_id`, pero apunta a comision_colaboradores, no a
+        // usuarios: es «quién hace el trabajo», no «de quién es el
+        // registro». Añadirla aquí no haría nada (hayColumna la ve) y
+        // dejaría dos significados bajo el mismo nombre. El alcance de
+        // Trabajos filtra por el responsable de la VENTA.
+        foreach (['clientes', 'ventas', 'lf_citas', 'lf_cotizaciones'] as $t) {
             if (!self::hayTabla($db, $t)) continue;
             if (!self::hayColumna($db, $t, 'responsable_id')) {
                 $db->exec("ALTER TABLE `$t` ADD COLUMN responsable_id INT NULL");
@@ -1236,6 +1246,159 @@ final class Migraciones
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     }
 
+    /**
+     * 27 · El id que le da la plataforma a cada lead.
+     *
+     * Las plataformas reintentan el webhook cuando no reciben un 200 a
+     * tiempo, y reintentan de verdad: sin esto, un lead de Google Ads
+     * puede entrar tres veces y tres agentes le llaman la misma tarde.
+     *
+     * Va en su propia tabla y no como columna de lf_prospectos porque
+     * un prospecto puede llegar por dos caminos —el formulario y luego
+     * el WhatsApp— y los dos ids apuntan al mismo.
+     */
+    private static function v27(PDO $db)
+    {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS lf_prospecto_externos (
+                id           INT AUTO_INCREMENT PRIMARY KEY,
+                prospecto_id INT NOT NULL,
+                externo_id   VARCHAR(190) NOT NULL,
+                creado_en    DATETIME NOT NULL,
+                UNIQUE KEY ux_externo (externo_id),
+                KEY ix_externo_prospecto (prospecto_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        // La bitácora de lo que llega, antes de traducirlo. Cuando un
+        // lead «no aparece», esto es lo único que dice si la plataforma
+        // lo mandó y nosotros lo descartamos, o nunca llegó.
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS lf_canal_entradas (
+                id          INT AUTO_INCREMENT PRIMARY KEY,
+                plataforma  VARCHAR(20) NOT NULL,
+                externo_id  VARCHAR(190) NULL,
+                carga       MEDIUMTEXT NULL,
+                prospecto_id INT NULL,
+                resultado   VARCHAR(30) NOT NULL,
+                creado_en   DATETIME NOT NULL,
+                KEY ix_entrada_creado (creado_en),
+                KEY ix_entrada_plataforma (plataforma)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    }
+
+    /**
+     * 28 · El despacho jurídico (módulo «legal»).
+     *
+     * Un ASUNTO no es un contrato. El contrato dice cuánto se cobra; el
+     * asunto dice en qué va el juicio. Un cliente puede tener tres
+     * asuntos bajo una sola iguala, y un asunto puede durar dos años
+     * mientras los cobros van por su cuenta.
+     *
+     * Por eso `venta_id` es opcional: el expediente se abre cuando el
+     * cliente trae el problema, no cuando paga.
+     *
+     * Las ETAPAS no se guardan como catálogo configurable a propósito.
+     * Las de un divorcio las fija el código de procedimientos, no el
+     * despacho: dejarlas editables invita a que cada quien las escriba
+     * distinto y luego no se pueda comparar nada entre expedientes.
+     */
+    private static function v28(PDO $db)
+    {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS lf_asuntos (
+                id             INT AUTO_INCREMENT PRIMARY KEY,
+                folio          VARCHAR(30)  NOT NULL,
+                cliente_id     INT NULL,
+                venta_id       INT NULL,
+                materia        VARCHAR(20)  NOT NULL,
+                titulo         VARCHAR(255) NOT NULL,
+                etapa          VARCHAR(40)  NOT NULL DEFAULT 'sin_iniciar',
+                semaforo       CHAR(8)      NOT NULL DEFAULT 'verde',
+                juzgado        VARCHAR(160) NULL,
+                expediente_num VARCHAR(60)  NULL,
+                contraparte    VARCHAR(160) NULL,
+                cuantia        DECIMAL(14,2) NOT NULL DEFAULT 0,
+                responsable_id INT NULL,
+                proxima_fecha  DATE NULL,
+                proximo_paso   VARCHAR(255) NULL,
+                motivo_cierre  VARCHAR(255) NULL,
+                creado_en      DATETIME NOT NULL,
+                actualizado_en DATETIME NULL,
+                UNIQUE KEY ux_asunto_folio (folio),
+                KEY ix_asunto_cliente (cliente_id),
+                KEY ix_asunto_responsable (responsable_id),
+                KEY ix_asunto_proxima (proxima_fecha),
+                KEY ix_asunto_materia (materia)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        // Las actuaciones: qué pasó y cuándo. Es el expediente.
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS lf_asunto_actuaciones (
+                id         INT AUTO_INCREMENT PRIMARY KEY,
+                asunto_id  INT NOT NULL,
+                usuario_id INT NULL,
+                etapa      VARCHAR(40) NULL,
+                tipo       VARCHAR(20) NOT NULL DEFAULT 'nota',
+                texto      TEXT NOT NULL,
+                fecha      DATE NULL,
+                creado_en  DATETIME NOT NULL,
+                KEY ix_act_asunto (asunto_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        // Los documentos exigidos por tipo de trámite, marcados conforme
+        // llegan. Sin esto, «faltaba el acta» se descubre en ventanilla.
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS lf_asunto_documentos (
+                id          INT AUTO_INCREMENT PRIMARY KEY,
+                asunto_id   INT NOT NULL,
+                nombre      VARCHAR(160) NOT NULL,
+                recibido    TINYINT(1) NOT NULL DEFAULT 0,
+                recibido_en DATETIME NULL,
+                nota        VARCHAR(255) NULL,
+                KEY ix_doc_asunto (asunto_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    }
+
+    /**
+     * 29 · La agencia de seguros (módulo «seguros»).
+     *
+     * La PÓLIZA es el centro, y lo que la hace distinta de un contrato
+     * normal es que CADUCA. Un despacho pierde un cliente cuando se va;
+     * una agencia lo pierde cuando nadie avisó que vencía el 14.
+     *
+     * Por eso `fin_vigencia` lleva índice: la consulta que de verdad
+     * importa es «qué vence en los próximos 30 días».
+     */
+    private static function v29(PDO $db)
+    {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS lf_polizas (
+                id             INT AUTO_INCREMENT PRIMARY KEY,
+                numero         VARCHAR(60)  NOT NULL,
+                cliente_id     INT NULL,
+                venta_id       INT NULL,
+                ramo           VARCHAR(20)  NOT NULL,
+                aseguradora    VARCHAR(120) NOT NULL,
+                prima          DECIMAL(12,2) NOT NULL DEFAULT 0,
+                suma_asegurada DECIMAL(14,2) NOT NULL DEFAULT 0,
+                comision_pct   DECIMAL(5,2) NOT NULL DEFAULT 0,
+                forma_pago     VARCHAR(20)  NOT NULL DEFAULT 'anual',
+                inicio_vigencia DATE NULL,
+                fin_vigencia   DATE NULL,
+                estado         VARCHAR(20)  NOT NULL DEFAULT 'vigente',
+                responsable_id INT NULL,
+                renovada_de    INT NULL,
+                nota           VARCHAR(255) NULL,
+                creado_en      DATETIME NOT NULL,
+                actualizado_en DATETIME NULL,
+                UNIQUE KEY ux_poliza_numero (numero, aseguradora),
+                KEY ix_poliza_cliente (cliente_id),
+                KEY ix_poliza_responsable (responsable_id),
+                KEY ix_poliza_vence (fin_vigencia),
+                KEY ix_poliza_estado (estado)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+    }
+
     /** Lo que hace cada versión, para mostrarlo en Mantenimiento. */
     const DESCRIPCIONES = [
         1 => 'Tabla de ajustes propia (lf_ajustes)',
@@ -1261,7 +1424,10 @@ final class Migraciones
         22 => 'Módulos por giro: cancelar ventas, expediente, cotizaciones, igualas, seguimiento, compras, agenda y paquetes',
         23 => 'Recupera los productos de Emida que apagó la descarga automática del catálogo',
         24 => 'API: cobros por la API que no se aplican dos veces (Idempotency-Key)',
-        25 => 'Responsable de cada cliente, contrato y cita (alcance por renglón)',
+        25 => 'Responsable de cada cliente, contrato, cita y cotización (alcance por renglón)',
         26 => 'Embudo de prospectos con semáforo y bitácora de seguimiento',
+        27 => 'Canales: id externo del lead (anti-duplicado) y bitácora de entradas',
+        28 => 'Despacho jurídico: asuntos, actuaciones y documentos por trámite',
+        29 => 'Agencia de seguros: pólizas con vigencia y comisión',
     ];
 }

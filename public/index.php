@@ -299,6 +299,34 @@ $r->post('/clientes/{id}/archivo',       ['LibertyFin\Controlador\ExpedienteCont
 $r->get('/clientes/{id}/archivo/{aid}',  ['LibertyFin\Controlador\ExpedienteControlador', 'bajar']);
 $r->post('/clientes/{id}/archivo/{aid}/borrar', ['LibertyFin\Controlador\ExpedienteControlador', 'borrarArchivo']);
 // ── Módulos (Servicio\Modulos) ──
+// ── Canales: por donde entran los leads (modulo «canales») ──
+//
+// Los webhooks NO piden sesion: quien llama es un servidor de Meta,
+// TikTok o Google. Su puerta es el secreto de la URL mas la firma, que
+// comprueba el controlador. Van en $publicas, mas abajo.
+$r->get ('/canales/{empresa}/meta',     ['LibertyFin\\Controlador\\CanalesControlador', 'verificar']);
+$r->post('/canales/{empresa}/meta',     ['LibertyFin\\Controlador\\CanalesControlador', 'recibir']);
+$r->post('/canales/{empresa}/tiktok',   ['LibertyFin\\Controlador\\CanalesControlador', 'recibir']);
+$r->post('/canales/{empresa}/linkedin', ['LibertyFin\\Controlador\\CanalesControlador', 'recibir']);
+$r->post('/canales/{empresa}/google',   ['LibertyFin\\Controlador\\CanalesControlador', 'recibir']);
+$r->get ('/canales',                    ['LibertyFin\\Controlador\\CanalesControlador', 'index']);
+
+// ── Despacho juridico (modulo «legal») ──
+$r->get ('/legal',                  ['LibertyFin\\Controlador\\LegalControlador', 'index']);
+$r->post('/legal/guardar',          ['LibertyFin\\Controlador\\LegalControlador', 'guardar']);
+$r->get ('/legal/{id}',             ['LibertyFin\\Controlador\\LegalControlador', 'ver']);
+$r->post('/legal/{id}/mover',       ['LibertyFin\\Controlador\\LegalControlador', 'mover']);
+$r->post('/legal/{id}/anotar',      ['LibertyFin\\Controlador\\LegalControlador', 'anotar']);
+$r->post('/legal/{id}/fecha',       ['LibertyFin\\Controlador\\LegalControlador', 'fecha']);
+$r->post('/legal/{id}/documento',   ['LibertyFin\\Controlador\\LegalControlador', 'documento']);
+
+// ── Agencia de seguros (modulo «seguros») ──
+$r->get ('/seguros',                ['LibertyFin\\Controlador\\SegurosControlador', 'index']);
+$r->post('/seguros/guardar',        ['LibertyFin\\Controlador\\SegurosControlador', 'guardar']);
+$r->get ('/seguros/{id}',           ['LibertyFin\\Controlador\\SegurosControlador', 'ver']);
+$r->post('/seguros/{id}/renovar',   ['LibertyFin\\Controlador\\SegurosControlador', 'renovar']);
+$r->post('/seguros/{id}/estado',    ['LibertyFin\\Controlador\\SegurosControlador', 'estado']);
+
 // ── Prospectos (módulo «prospectos») ──
 $r->get ('/prospectos',                  ['LibertyFin\\Controlador\\ProspectosControlador', 'index']);
 $r->post('/prospectos/guardar',          ['LibertyFin\\Controlador\\ProspectosControlador', 'guardar']);
@@ -329,13 +357,9 @@ $r->get('/reportes',     ['LibertyFin\Controlador\ReportesControlador', 'index']
 if (\LibertyFin\Servicio\Integraciones::activa('spei')) {
 }
 
-// Facturación: igual que recargas, solo existe con credenciales.
-if (\LibertyFin\Servicio\Integraciones::activa('facturapi')) {
-}
+// Facturación (CFDI) y recargas se fueron con el POS: las dos mueven o
+// comprueban dinero del cliente de la empresa, y el CRM no cobra.
 
-// Recargas: la ruta solo existe si hay credenciales. Sin ellas, 404.
-if (\LibertyFin\Servicio\Integraciones::activa('emida')) {
-}
 $r->get('/reportes/excel',    ['LibertyFin\Controlador\ReportesControlador', 'excel']);
 $r->get('/reportes/imprimir', ['LibertyFin\Controlador\ReportesControlador', 'imprimir']);
 $r->get('/ayuda',                 ['LibertyFin\Controlador\AyudaControlador', 'index']);
@@ -387,7 +411,6 @@ $r->post('/mantenimiento/secciones',['LibertyFin\Controlador\MantenimientoContro
 $r->post('/mantenimiento/migrar',   ['LibertyFin\Controlador\MantenimientoControlador', 'migrar']);
 $r->post('/mantenimiento/revisar',  ['LibertyFin\Controlador\MantenimientoControlador', 'revisar']);
 $r->post('/mantenimiento/pago',     ['LibertyFin\Controlador\MantenimientoControlador', 'revisarPago']);
-$r->post('/mantenimiento/correo',   ['LibertyFin\Controlador\MantenimientoControlador', 'probarCorreo']);
 $r->post('/mantenimiento/empresa/aprobar',  ['LibertyFin\Controlador\MantenimientoControlador', 'aprobarEmpresa']);
 $r->post('/mantenimiento/empresa/rechazar', ['LibertyFin\Controlador\MantenimientoControlador', 'rechazarEmpresa']);
 $r->get('/ajustes',          ['LibertyFin\Controlador\AjustesControlador', 'index']);
@@ -465,6 +488,19 @@ $permisos = [
   '/clientes/{id}/archivo'  => 'editar.expediente',
   '/clientes/{id}/archivo/{aid}' => 'ver.expediente',
   '/clientes/{id}/archivo/{aid}/borrar' => 'editar.expediente',
+  '/canales'                 => 'ver.canales',
+  '/legal'                   => 'ver.legal',
+  '/legal/guardar'           => 'editar.legal',
+  '/legal/{id}'              => 'ver.legal',
+  '/legal/{id}/mover'        => 'editar.legal',
+  '/legal/{id}/anotar'       => 'editar.legal',
+  '/legal/{id}/fecha'        => 'editar.legal',
+  '/legal/{id}/documento'    => 'editar.legal',
+  '/seguros'                 => 'ver.seguros',
+  '/seguros/guardar'         => 'editar.seguros',
+  '/seguros/{id}'            => 'ver.seguros',
+  '/seguros/{id}/renovar'    => 'editar.seguros',
+  '/seguros/{id}/estado'     => 'editar.seguros',
   '/prospectos'              => 'ver.prospectos',
   '/prospectos/guardar'      => 'editar.prospectos',
   '/prospectos/{id}'         => 'ver.prospectos',
@@ -544,7 +580,6 @@ $permisos = [
   '/mantenimiento/migrar'   => 'secciones',
   '/mantenimiento/revisar'  => 'revisar.docs',
   '/mantenimiento/pago'     => 'revisar.docs',
-  '/mantenimiento/correo'   => 'diagnostico',
   '/mantenimiento/empresa/aprobar'  => 'alta.empresas',
   '/mantenimiento/empresa/rechazar' => 'alta.empresas',
   // El perfil y la clave son de cada quien, sin permiso. Los datos
@@ -584,9 +619,17 @@ $ruta     = '/' . trim((string)parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH),
 $esAviso = strncmp($ruta, '/pagadetodo/', 12) === 0
         || \LibertyFin\Controlador\PagosEntrantesControlador::esRutaAnterior($ruta);
 
+// Los webhooks de canales tampoco piden sesión, y llevan la empresa en
+// la ruta —/canales/BASE/meta—, así que la lista exacta de $publicas no
+// los reconoce: hace falta comprobar el prefijo.
+//
+// OJO: /canales a secas SÍ es la pantalla y SÍ pide sesión. Por eso se
+// exige que haya algo después, y no basta con que empiece por /canales.
+$esCanal = (bool)preg_match('#^/canales/[A-Za-z0-9_]+/(meta|tiktok|linkedin|google)$#', $ruta);
+
 // El portero: una sola línea decide quién pasa, en vez de repetir la
 // comprobación al inicio de cada archivo como hacía el sistema anterior.
-if (!$esAviso && !in_array($ruta, $publicas, true) && !Autenticar::sesionValida()) {
+if (!$esAviso && !$esCanal && !in_array($ruta, $publicas, true) && !Autenticar::sesionValida()) {
     header('Location: /login'); exit;
 }
 

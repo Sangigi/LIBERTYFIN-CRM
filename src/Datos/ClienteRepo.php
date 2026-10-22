@@ -11,6 +11,21 @@ namespace LibertyFin\Datos;
  */
 final class ClienteRepo extends Repo
 {
+    /** @var \LibertyFin\Dominio\Alcance */
+    private $alcance;
+
+    /**
+     * El alcance entra por el constructor y no se lee de la sesión aquí
+     * dentro: así una prueba, un trabajo de fondo o la API pueden pedir
+     * explícitamente «todo» o «lo de este usuario», sin depender de que
+     * haya una sesión abierta.
+     */
+    public function __construct(\PDO $db, \LibertyFin\Dominio\Alcance $alcance = null)
+    {
+        parent::__construct($db);
+        $this->alcance = $alcance ?: \LibertyFin\Dominio\Alcance::deSesion();
+    }
+
     private function rango($desde, $hasta)
     {
         return [$desde . ' 00:00:00',
@@ -61,6 +76,9 @@ final class ClienteRepo extends Repo
         $p = [$a, $b];
         if ($buscar !== '') { $w[] = '(c.nombre LIKE ? OR c.telefono LIKE ?)';
                               $l = '%' . $buscar . '%'; $p[] = $l; $p[] = $l; }
+        // Solo los clientes de quien pregunta, salvo que alcance todo.
+        $alc = $this->alcance->filtroPos('responsable_id', 'c');
+        if ($alc !== '') { $w[] = ltrim(substr($alc, 5)); $p[] = $this->alcance->valores()[0]; }
         return $this->todos("
             SELECT c.id, c.nombre, c.telefono,
                    COUNT(DISTINCT v.id)                    AS compras,
@@ -99,6 +117,10 @@ final class ClienteRepo extends Repo
         $p = [$a, $b];
         if ($buscar !== '') { $w[] = '(c.nombre LIKE ? OR c.telefono LIKE ?)';
                               $l = '%' . $buscar . '%'; $p[] = $l; $p[] = $l; }
+        // El MISMO filtro que listado(): si el conteo no se limita
+        // igual, la paginación promete páginas que vienen vacías.
+        $alc = $this->alcance->filtroPos('responsable_id', 'c');
+        if ($alc !== '') { $w[] = ltrim(substr($alc, 5)); $p[] = $this->alcance->valores()[0]; }
         return (int)$this->valor("
             SELECT COUNT(DISTINCT c.id) FROM ventas v
             INNER JOIN clientes c ON c.id = v.cliente_id
@@ -112,10 +134,11 @@ final class ClienteRepo extends Repo
             SELECT c.nombre, COALESCE(SUM(v.total),0) AS monto
             FROM ventas v
             INNER JOIN clientes c ON c.id = v.cliente_id
-            WHERE v.fecha >= ? AND v.fecha < ? AND v.estado <> 'cancelada'
+            WHERE v.fecha >= ? AND v.fecha < ? AND v.estado <> 'cancelada'"
+            . $this->alcance->filtroPos('responsable_id', 'c') . "
             GROUP BY c.id, c.nombre
             ORDER BY monto DESC
-            LIMIT " . (int)$tope, [$a, $b]);
+            LIMIT " . (int)$tope, array_merge([$a, $b], $this->alcance->valores()));
     }
 
     /**
@@ -147,9 +170,16 @@ final class ClienteRepo extends Repo
     // ALTA Y EDICION
     // ─────────────────────────────────────────────────────────────
 
+    /**
+     * La ficha. Devuelve null si no existe O si no le toca a quien
+     * pregunta: desde fuera son el mismo caso, porque distinguirlos ya
+     * confirma que ese cliente existe en el despacho.
+     */
     public function uno_($id)
     {
-        return $this->uno("SELECT * FROM clientes WHERE id = ?", [(int)$id]);
+        return $this->uno(
+            "SELECT * FROM clientes WHERE id = ?" . $this->alcance->filtroPos('responsable_id'),
+            array_merge([(int)$id], $this->alcance->valores()));
     }
 
     /**
@@ -224,8 +254,20 @@ final class ClienteRepo extends Repo
         return (int)$this->db->lastInsertId();
     }
 
+    /**
+     * LEER Y ESCRIBIR SE PROTEGEN POR SEPARADO.
+     *
+     * Que uno_() filtre impide VER el cliente de otro, no EDITARLO:
+     * basta mandar el id en el formulario. Por eso la comprobación se
+     * repite aquí en vez de confiar en que la pantalla ya la hizo.
+     *
+     * @throws \InvalidArgumentException si no le toca a quien edita
+     */
     public function actualizar($id, array $d)
     {
+        if (!$this->uno_($id)) {
+            throw new \InvalidArgumentException('Ese cliente no existe.');
+        }
         list($nombre, $rfc, $email, $tel, $dir, $area) = $this->limpiar($d, $id);
         if ($this->tieneArea()) {
             $this->db->prepare("

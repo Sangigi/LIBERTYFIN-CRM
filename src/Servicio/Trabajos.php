@@ -26,7 +26,19 @@ final class Trabajos
     const DIAS_ENTREGADOS = 15;
 
     private $db;
-    public function __construct(PDO $db) { $this->db = $db; }
+    /** @var \LibertyFin\Dominio\Alcance */
+    private $alcance;
+
+    /**
+     * El alcance entra por el constructor y no se lee de la sesión aquí:
+     * una prueba, un trabajo de fondo o la API pueden pedir «todo» o
+     * «lo de este usuario» sin que haya sesión abierta.
+     */
+    public function __construct(PDO $db, \LibertyFin\Dominio\Alcance $alcance = null)
+    {
+        $this->db = $db;
+        $this->alcance = $alcance ?: \LibertyFin\Dominio\Alcance::deSesion();
+    }
 
     /**
      * El tablero: las ventas vivas desde $desde, agrupadas por estado.
@@ -45,6 +57,12 @@ final class Trabajos
             $w[] = '(v.codigo_venta LIKE ? OR c.nombre LIKE ? OR v.descripcion LIKE ?)';
             $l = '%' . $q . '%'; $p[] = $l; $p[] = $l; $p[] = $l;
         }
+        // El alcance filtra por el responsable de la VENTA, no por
+        // t.responsable_id: esa columna es «quién hace el trabajo»
+        // (un colaborador), no «de quién es el registro» (un usuario).
+        $alc = $this->alcance->filtroPos('responsable_id', 'v');
+        if ($alc !== '') { $w[] = ltrim(substr($alc, 5)); $p[] = $this->alcance->valores()[0]; }
+
         $st = $this->db->prepare("
             SELECT v.id, v.codigo_venta, v.fecha, v.total, v.descripcion, v.especialista_nombre,
                    c.nombre AS cliente, v.cliente_id,
@@ -105,8 +123,11 @@ final class Trabajos
     public function guardar($ventaId, array $d, $usuario = '')
     {
         $ventaId = (int)$ventaId;
-        $st = $this->db->prepare("SELECT estado FROM ventas WHERE id = ?");
-        $st->execute([$ventaId]);
+        // El alcance va también aquí: ver el tablero filtrado no impide
+        // mandar el id de un contrato ajeno en el formulario.
+        $st = $this->db->prepare("SELECT estado FROM ventas WHERE id = ?"
+                                 . $this->alcance->filtroPos('responsable_id'));
+        $st->execute(array_merge([$ventaId], $this->alcance->valores()));
         $ev = $st->fetchColumn();
         if ($ev === false) throw new \InvalidArgumentException('Esa venta no existe.');
         if ($ev === 'cancelada') throw new \InvalidArgumentException('La venta está cancelada: no hay trabajo que seguir.');

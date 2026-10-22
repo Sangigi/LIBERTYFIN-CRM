@@ -54,10 +54,20 @@ final class ProspectoRepo
         'whatsapp'  => 'WhatsApp',
         'instagram' => 'Instagram',
         'facebook'  => 'Facebook',
+        'tiktok'    => 'TikTok',
+        'linkedin'  => 'LinkedIn',
+        'google'    => 'Google Ads',
         'web'       => 'Sitio web',
         'referido'  => 'Referido',
         'llamada'   => 'Llamada',
     ];
+
+    // OJO: valido() devuelve 'manual' para lo que no esté en esta lista.
+    // Es la decisión correcta —nada inventado entra a la base— pero
+    // significa que olvidar un origen aquí NO falla: el lead entra como
+    // «captura manual» y se pierde de dónde vino, que es justo lo que
+    // mide el gasto en anuncios. Servicio\Entrada::PLATAFORMAS tiene que
+    // cuadrar con esto, y lo comprueba la revisión de coherencia.
 
     private $db;
     private $alcance;

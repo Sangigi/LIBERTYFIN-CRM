@@ -101,3 +101,64 @@ Esta es la especificación. Los endpoints del lado CRM
 (`/api/contratos`, `/api/prospectos`, `/api/cobranza/estado`) todavía no
 existen. El lado POS sí: ya expone `Clientes`, `Ventas`, `Cobranza` y
 `Productos`.
+
+---
+
+# LibertyPay: dónde encaja
+
+LibertyPay es la pasarela propia para cobros con tarjeta. Su llegada no
+cambia la regla, pero sí invita a romperla, así que conviene dejarlo
+escrito.
+
+## Dos cobros distintos que pasan por la misma pasarela
+
+**1. La empresa le paga su plan a LibertyFin.**
+Esto sí toca al CRM. Es el mismo caso que ya existe con SPEI: la liga se
+genera desde *Mi cuenta → Plan*, y el aviso del proveedor entra por
+`PagosEntrantesControlador`. LibertyPay se declara en `Integraciones`
+con la llave `libertypay`.
+
+**2. La empresa le cobra con tarjeta a su cliente.**
+Esto **no** toca al CRM. Lo hace LibertyFin POS, que es quien tiene
+caja, quien concilia el corte y quien timbra el CFDI.
+
+Son dos cosas con el mismo nombre —«cobrar con tarjeta»— y es justo por
+eso que se confunden.
+
+## La tentación, y por qué no
+
+Teniendo LibertyPay a mano, lo natural es pensar: «si el CRM ya sabe
+hablar con LibertyPay para la suscripción, que le pregunte también si el
+anticipo del cliente se pagó».
+
+No. Si el CRM pregunta a LibertyPay y el POS pregunta a LibertyPay, el
+mismo contrato tiene **dos fuentes de verdad** que no comparten las
+cancelaciones, las devoluciones ni los contracargos. El día que un pago
+se revierta, el POS lo sabrá y el CRM seguirá mostrando el contrato como
+pagado. Ese desfase no se ve hasta que alguien reclama.
+
+**El CRM le pregunta al POS, siempre.** Un solo camino para un solo dato.
+El POS es el único que habla con LibertyPay sobre el dinero de los
+clientes de la empresa, porque es el único que tiene dónde asentarlo.
+
+```
+  Cobro al cliente de la empresa        Cobro de la suscripción
+
+  cliente → LibertyPay → POS            empresa → LibertyPay → CRM
+                          ↓                                   ↓
+                   CRM pregunta                        plan activado
+                   el estado
+```
+
+## Qué hay que construir
+
+Del lado del CRM, solo lo de suscripción:
+
+- Credenciales `libertypay` en Ajustes (ya está la entrada del catálogo:
+  `comercio`, `llave`, `secreto`).
+- Generar la liga de pago del plan, junto a la de SPEI.
+- Recibir el aviso de LibertyPay y activar la suscripción. Reusar
+  `PagosEntrantesControlador`, que ya trae idempotencia: una pasarela
+  reintenta, y cobrar dos veces el plan es la peor primera impresión.
+
+Del lado del POS, todo lo demás.
