@@ -3,7 +3,7 @@
 // Vive fuera de public/, así que no es alcanzable por web aunque falle .htaccess.
 return [
     'bd' => [
-        'host'    => 'localhost',
+        'host'    => 'libertyfin.com.mx',
         'usuario' => 'juanc141_alexis',
         'clave'   => 'Alexis1997',
         'principal' => 'juanc141_ventas',
