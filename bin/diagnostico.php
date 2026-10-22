@@ -39,8 +39,17 @@ try {
 /** Las columnas que el código PIDE de cada tabla de la base principal. */
 $esperado = [
     'usuarios_plataforma' => ['id','username','password','nombre','email','rol','activo','creado_en'],
-    'empresas'            => ['id','nombre_empresa','nombre_base_datos','activo','plan'],
+    'empresas'            => ['id','nombre_empresa','nombre_base_datos','activo','plan',
+                              'fecha_vencimiento','email_admin','usuario_admin'],
 ];
+
+/**
+ * Estas se crean solas la primera vez que alguien las usa, así que no
+ * existir no es un problema: solo quiere decir que nadie ha pasado por
+ * ahí todavía. Se listan para que su ausencia no asuste.
+ */
+$seCreanSolas = ['usuarios_indice', 'pagos_plan', 'solicitudes_empresa',
+                 'tickets', 'ticket_mensajes', 'ticket_eventos', 'ticket_lecturas'];
 
 $problemas = [];
 
@@ -68,6 +77,16 @@ foreach ($esperado as $tabla => $cols) {
         $n = (int)$db->query("SELECT COUNT(*) FROM `$tabla`")->fetchColumn();
         echo "  ✓ $tabla — bien ($n filas)\n";
     }
+}
+
+// Las que se crean solas: solo informativo.
+echo "\n";
+foreach ($seCreanSolas as $t2) {
+    $st = $db->prepare("SELECT COUNT(*) FROM information_schema.TABLES
+                         WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?");
+    $st->execute([$principal, $t2]);
+    $hay = (int)$st->fetchColumn() > 0;
+    echo '  ' . ($hay ? '·' : '·') . " $t2 — " . ($hay ? 'existe' : 'se creará sola al usarse') . "\n";
 }
 
 // ¿Hay ya por quién entrar?

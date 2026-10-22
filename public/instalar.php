@@ -74,6 +74,42 @@ $db->exec("
         KEY ix_up_activo (activo)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
+// ── `empresas`: la única que nadie más crea ──
+//
+// Casi todas las tablas de la base principal se crean solas la primera
+// vez que alguien las usa: `usuarios_indice` desde AutenticacionRepo,
+// `pagos_plan` desde PlanRepo, los tickets desde TicketRepo,
+// `solicitudes_empresa` desde CrearEmpresa.
+//
+// `empresas` no. En la instalación original venía de un volcado de SQL,
+// así que nunca hizo falta. Sobre una base NUEVA eso deja al
+// superadministrador entrando a un panel que revienta con «Table
+// 'empresas' doesn't exist» antes de poder hacer nada, y sin forma de
+// salir del paso desde la propia aplicación.
+//
+// Las columnas son las que el código pide, ni una más: EmpresaRepo,
+// CrearEmpresa, Suscripcion y AutenticacionRepo.
+$db->exec("
+    CREATE TABLE IF NOT EXISTS empresas (
+        id                INT AUTO_INCREMENT PRIMARY KEY,
+        nombre_empresa    VARCHAR(200) NOT NULL,
+        giro_comercial    VARCHAR(200) NULL,
+        rfc               VARCHAR(20)  NULL,
+        no_distribuidor   VARCHAR(40)  NULL,
+        telefono          VARCHAR(40)  NULL,
+        direccion         VARCHAR(255) NULL,
+        nombre_contacto   VARCHAR(160) NULL,
+        email_admin       VARCHAR(190) NULL,
+        usuario_admin     VARCHAR(60)  NULL,
+        nombre_base_datos VARCHAR(64)  NOT NULL,
+        plan              VARCHAR(30)  NOT NULL DEFAULT 'prueba',
+        fecha_vencimiento DATE NULL,
+        activo            TINYINT(1) NOT NULL DEFAULT 1,
+        creado_en         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY ix_emp_base (nombre_base_datos),
+        KEY ix_emp_activo (activo)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
 // ── El candado: si ya hay superadministrador, esto no existe ──
 $cuantos = (int)$db->query(
     "SELECT COUNT(*) FROM usuarios_plataforma WHERE rol = 'superadmin' AND activo = 1")
