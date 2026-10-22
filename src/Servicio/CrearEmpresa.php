@@ -338,18 +338,58 @@ final class CrearEmpresa
                 CURLOPT_SSL_VERIFYPEER => true,
                 CURLOPT_SSL_VERIFYHOST => 2,
             ]);
-            $r = curl_exec($ch);
-            $err = curl_error($ch);
+            $r    = curl_exec($ch);
+            $err  = curl_error($ch);
+            $http = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
-            if ($r === false) return ['ok' => false, 'error' => $err];
+
+            if ($r === false) return ['ok' => false, 'error' => 'cURL: ' . $err];
+
             $j = json_decode($r, true);
-            return ['ok' => !empty($j['status']), 'error' => $j['errors'][0] ?? 'respuesta inesperada'];
+            if (!empty($j['status'])) return ['ok' => true, 'error' => null];
+
+            // DECIR QUÉ LLEGÓ, NO «respuesta inesperada».
+            //
+            // Antes, cualquier cosa que no fuera el JSON esperado daba ese
+            // mensaje: el token mal, el puerto cerrado, la base repetida y
+            // una página de login de cPanel se veían todas igual. Con el
+            // código HTTP y un trozo del cuerpo, la causa se distingue en
+            // el primer vistazo.
+            //
+            // El cuerpo va recortado y SIN la cabecera de autorización,
+            // que nunca viaja en la respuesta: aquí no se filtra el token.
+            if (isset($j['errors'][0]))     return ['ok' => false, 'error' => $j['errors'][0]];
+            if (isset($j['error']))         return ['ok' => false, 'error' => $j['error']];
+            if (!empty($j['cpanelresult']['error'])) {
+                return ['ok' => false, 'error' => $j['cpanelresult']['error']];
+            }
+
+            $pista = $j === null
+                ? 'la respuesta no es JSON (¿token inválido, o el puerto 2083 cerrado?)'
+                : 'JSON sin «status» ni «errors»';
+            $trozo = trim(preg_replace('/\s+/', ' ', mb_substr((string)$r, 0, 300)));
+
+            return ['ok' => false,
+                    'error' => sprintf('HTTP %d · %s · respuesta: %s', $http, $pista, $trozo)];
         };
 
         $r = $llamar('Mysql', 'create_database', ['name' => $cp['usuario'] . '_' . $sufijo]);
         if (!$r['ok']) return $r;
+        // EL USUARIO DE MYSQL, NO EL DE CPANEL.
+        //
+        // Sin `usuario_bd` esto arma «cuenta_cuenta», que casi nunca
+        // existe: la base queda creada y sin nadie que pueda entrar, y el
+        // error sale después, al conectarse, lejos de aquí. Si no está
+        // configurado, se dice ahora.
+        $usuarioBd = trim((string)($cp['usuario_bd'] ?? ''));
+        if ($usuarioBd === '') {
+            return ['ok' => false, 'error' =>
+                'Falta «usuario_bd» en la sección cpanel de config/integraciones.php: '
+                . 'es el usuario de MySQL que tendrá permisos sobre la base nueva, '
+                . 'sin el prefijo de la cuenta. La base se creó, pero sin permisos.'];
+        }
         return $llamar('Mysql', 'set_privileges_on_database', [
-            'user'       => $cp['usuario'] . '_' . ($cp['usuario_bd'] ?? $cp['usuario']),
+            'user'       => $cp['usuario'] . '_' . $usuarioBd,
             'database'   => $cp['usuario'] . '_' . $sufijo,
             'privileges' => 'ALL PRIVILEGES',
         ]);

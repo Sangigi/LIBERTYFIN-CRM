@@ -367,10 +367,25 @@ return [
 
     // ── cPanel · crear bases de empresas nuevas ─────────────────
     // Solo lo usa la capa de plataforma, no una empresa.
+    // cPanel: crea la base de cada empresa nueva al aprobarla.
+    //
+    // 'host'    el dominio del cPanel, SIN https:// y sin el :2083.
+    // 'usuario' la cuenta de cPanel. Es también el prefijo que cPanel le
+    //           pone a todo lo que cree: las bases saldrán «usuario_loquesea».
+    // 'token'   se genera en cPanel → Manage API Tokens, con permiso
+    //           sobre bases de datos.
+    //
+    // 'usuario_bd' es el usuario de MySQL al que se le dan permisos sobre
+    // cada base nueva, SIN el prefijo. Si lo dejas vacío se usa el nombre
+    // de la cuenta, y entonces busca «usuario_usuario», que casi nunca
+    // existe: la base se crea pero nadie puede entrar a ella.
+    //
+    // Pruébalo antes de aprobar ninguna empresa:  php bin/probar-cpanel.php
     'cpanel' => [
-        'activo'  => false,
-        'host'    => '',
-        'usuario' => '',
-        'token'   => '',
+        'activo'     => false,
+        'host'       => '',
+        'usuario'    => '',
+        'token'      => '',
+        'usuario_bd' => '',
     ],
 ];
