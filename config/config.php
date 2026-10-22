@@ -4,9 +4,9 @@
 return [
     'bd' => [
         'host'    => 'libertyfin.com.mx',
-        'usuario' => 'juanc141_alexis',
-        'clave'   => 'Alexis1997',
-        'principal' => 'juanc141_ventas',
+        'usuario' => 'grupoide_developer',
+        'clave'   => 'developer123',
+        'principal' => 'juanc141_crm',
         // 'puerto' => 3306,   // solo si MySQL no está en el puerto de siempre
     ],
 
