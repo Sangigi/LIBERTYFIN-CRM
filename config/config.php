@@ -29,5 +29,5 @@ return [
         'privacidad' => '',   // https://libertyfin.mx/privacidad
     ],
 
-    'depurar' => false,   // true solo en local
+    'depurar' => true,   // true solo en local
 ];
