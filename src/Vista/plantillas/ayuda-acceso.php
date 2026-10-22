@@ -7,7 +7,7 @@ use LibertyFin\Vista\Plantilla as P;
     <?php if (is_file($logo)): ?>
       <img src="/assets/img/logo-blanco.png?v=<?= filemtime($logo) ?>" alt="LibertyFin">
     <?php else: ?>
-      <span class="lf-logo-texto">Libertyfin</span>
+      <span class="lf-logo-texto">Libertyfin CRM</span>
     <?php endif; ?>
   </div>
 
@@ -39,5 +39,5 @@ use LibertyFin\Vista\Plantilla as P;
     </a>
   </div>
 
-  <p class="lf-pie-entrada">© <?= date('Y') ?> Libertyfin · Todos los derechos reservados</p>
+  <p class="lf-pie-entrada">© <?= date('Y') ?> Libertyfin CRM · Todos los derechos reservados</p>
 </main>

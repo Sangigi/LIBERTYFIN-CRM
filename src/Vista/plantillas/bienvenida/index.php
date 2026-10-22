@@ -64,7 +64,7 @@ $MC = \LibertyFin\Servicio\Modulos::CATALOGO;
 <div class="lf-bv" id="lfBv">
 
   <header class="lf-bv-cab">
-    <span class="lf-bv-marca">Libertyfin</span>
+    <span class="lf-bv-marca">Libertyfin CRM</span>
     <div class="lf-bv-avance" aria-hidden="true"><i id="bvBarra"></i></div>
     <span class="lf-bv-num" id="bvNum"><?= count($pasos) ?> pasos</span>
     <?php if (!$repite): ?>

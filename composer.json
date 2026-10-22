@@ -25,6 +25,7 @@
         "pruebas:todo": "phpunit",
         "revisar": [
             "php herramientas/revisar-sintaxis.php",
+            "php herramientas/revisar-indice.php",
             "php herramientas/revisar-destinos.php",
             "php herramientas/revisar-permisos.php",
             "php herramientas/revisar-rutas.php",

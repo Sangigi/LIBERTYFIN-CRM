@@ -21,9 +21,7 @@ final class AjustesControlador
 {
     const PESTANAS = [
         'empresa'      => 'Empresa',
-        'caja'         => 'Caja',
         'modulos'      => 'Módulos',
-        'inventario'   => 'Inventario',
         'sucursales'   => 'Sucursales',
         'comisiones'   => 'Áreas y colaboradores',
         'categorias'   => 'Categorías',
@@ -51,7 +49,7 @@ final class AjustesControlador
             'abrir'      => $editar > 0 || Peticion::texto('nuevo') !== '',
             'aviso'      => $_SESSION['lf_aviso'] ?? null,
             'sucursales' => [], 'areas' => [], 'colaboradores' => [], 'categorias' => [],
-            'empresa' => null, 'integraciones' => [], 'caja' => [], 'inventario' => [],
+            'empresa' => null, 'integraciones' => [],
             'llaves' => [], 'llaveNueva' => null, 'rolesApi' => [],
         ];
         if ($p === 'integraciones') {
@@ -72,8 +70,6 @@ final class AjustesControlador
                 'logo'  => $cfg->valorDe('marca.logo', ''),
             ];
         }
-        if ($p === 'caja') $datos['caja'] = (new ConfigRepo($db))->caja();
-        if ($p === 'inventario') $datos['inventario'] = (new ConfigRepo($db))->inventario();
         if ($p === 'modulos') {
             $mod = new \LibertyFin\Servicio\Modulos(new ConfigRepo($db));
             $datos['modulos'] = [];
@@ -115,26 +111,6 @@ final class AjustesControlador
         $que  = $_POST['que'] ?? '';
         $id   = (int)($_POST['id'] ?? 0);
 
-        // Caja: cómo arranca cada venta. Cada opción se guarda al elegirla.
-        if ($que === 'caja') {
-            try {
-                $cfg = new ConfigRepo($db);
-                $antes = $cfg->caja();
-                $cfg->guardarCaja($_POST);
-                $ahora = $cfg->caja();
-                $cambio = array_diff_assoc($ahora, $antes);
-                if ($cambio) {
-                    \LibertyFin\Servicio\Auditoria::anota('ajustes.cambiar', 'Caja',
-                        json_encode(array_intersect_key($antes, $cambio)), json_encode($cambio));
-                }
-                $this->volver('caja', 'Guardado.', 'ok');
-            } catch (\InvalidArgumentException $e) {
-                $this->volver('caja', $e->getMessage(), 'error');
-            } catch (\Throwable $e) {
-                error_log('[LibertyFin] ajustes/caja: ' . $e->getMessage());
-                $this->volver('caja', 'No se pudo guardar.', 'error');
-            }
-        }
 
         // Módulos: encender o apagar uno. Cambia el menú: se recarga.
         if ($que === 'modulo') {
@@ -164,27 +140,6 @@ final class AjustesControlador
             }
         }
 
-        // Inventario: encenderlo y qué hacer si no alcanzan. Igual que Caja.
-        if ($que === 'inventario') {
-            try {
-                $cfg = new ConfigRepo($db);
-                $antes = $cfg->inventario();
-                $cfg->guardarInventario($_POST);
-                $ahora = $cfg->inventario();
-                $cambio = array_diff_assoc($ahora, $antes);
-                if ($cambio) {
-                    \LibertyFin\Servicio\Auditoria::anota('ajustes.cambiar', 'Inventario',
-                        json_encode(array_intersect_key($antes, $cambio)), json_encode($cambio));
-                }
-                // Encenderlo o apagarlo cambia el menú: va el menú nuevo, sin recargar.
-                $this->volver('inventario', 'Guardado.', 'ok', isset($cambio['activo']) ? ['menu' => $this->menuHtml()] : []);
-            } catch (\InvalidArgumentException $e) {
-                $this->volver('inventario', $e->getMessage(), 'error');
-            } catch (\Throwable $e) {
-                error_log('[LibertyFin] ajustes/inventario: ' . $e->getMessage());
-                $this->volver('inventario', 'No se pudo guardar.', 'error');
-            }
-        }
 
         $mapa = [
             'sucursal'    => ['guardarSucursal',    'sucursales', 'Sucursal'],

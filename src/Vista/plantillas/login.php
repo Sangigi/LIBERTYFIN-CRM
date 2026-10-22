@@ -23,7 +23,7 @@ $token = $_SESSION['lf_token'];
     <?php if (is_file($logo)): ?>
       <img src="/assets/img/logo-blanco.png?v=<?= filemtime($logo) ?>" alt="LibertyFin">
     <?php else: ?>
-      <span class="lf-logo-texto">Libertyfin</span>
+      <span class="lf-logo-texto">Libertyfin CRM</span>
     <?php endif; ?>
     </a>
   </div>
@@ -64,7 +64,7 @@ $token = $_SESSION['lf_token'];
     </div>
   <?php else: ?>
     <h1>Iniciar sesión</h1>
-    <p class="lf-sub">Sistema de gestión de negocios · Multiempresa</p>
+    <p class="lf-sub">Captación de leads y seguimiento · Multiempresa</p>
 
     <?php if ($error): ?>
       <div class="lf-msg err"><?= P::e($error) ?></div>
@@ -128,14 +128,14 @@ $token = $_SESSION['lf_token'];
     </form>
     <?php /* La puerta para quien todavía no tiene cuenta. Antes no había:
              a /registro solo se llegaba sabiendo la dirección. */ ?>
-    <p class="lf-registrate">¿Tu negocio aún no usa Libertyfin? <a href="/registro">Regístralo gratis</a></p>
+    <p class="lf-registrate">¿Tu negocio aún no usa Libertyfin CRM? <a href="/registro">Regístralo</a></p>
   <?php endif; ?>
   </div>
 
   <a class="lf-volver" href="/">← Volver al inicio</a>
 
   <p class="lf-pie-entrada">
-    © <?= date('Y') ?> Libertyfin · Todos los derechos reservados
+    © <?= date('Y') ?> Libertyfin CRM · Todos los derechos reservados
   </p>
 </main>
 

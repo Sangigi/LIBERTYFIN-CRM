@@ -149,61 +149,6 @@ $r->post('/registro', ['LibertyFin\Controlador\RegistroControlador', 'enviar']);
 // Ahora la ruta siempre responde. Si falta configuración lo dice en el
 // registro, con el nombre de lo que falta.
 {
-    // CON EL SECRETO EN LA RUTA. Es la forma recomendada: el proveedor
-    // AÑADE «/?r=REFERENCIA» a la URL que se le da de alta, y pegado
-    // detrás de un «?k=SECRETO» rompe el secreto y la referencia a la
-    // vez. En la ruta no estorba.
-    $r->get   ('/pagadetodo/{k}/consulta-referencia', [$pdt, 'consultaReferencia']);
-    $r->post  ('/pagadetodo/{k}/pago-referencia',     [$pdt, 'pagoReferencia']);
-    $r->get   ('/pagadetodo/{k}/consulta-clabe',      [$pdt, 'consultaClabe']);
-    $r->post  ('/pagadetodo/{k}/pago-clabe',          [$pdt, 'pagoClabe']);
-    $r->post  ('/pagadetodo/{k}/pago-liga',           [$pdt, 'pagoLiga']);
-    $r->post  ('/pagadetodo/{k}/cancela-pago',        [$pdt, 'cancelaPago']);
-    $r->delete('/pagadetodo/{k}/cancela-pago',        [$pdt, 'cancelaPago']);
-
-    // Y las de siempre, para lo que ya esté dado de alta con ?k=
-    $r->get ('/pagadetodo/consulta-referencia', [$pdt, 'consultaReferencia']);
-    $r->post('/pagadetodo/pago-referencia',     [$pdt, 'pagoReferencia']);
-    $r->get ('/pagadetodo/consulta-clabe',      [$pdt, 'consultaClabe']);
-    $r->post('/pagadetodo/pago-clabe',          [$pdt, 'pagoClabe']);
-    $r->post('/pagadetodo/pago-liga',           [$pdt, 'pagoLiga']);
-    // La cancelación llega por DELETE o por POST: el proveedor decide.
-    $r->post  ('/pagadetodo/cancela-pago', [$pdt, 'cancelaPago']);
-    $r->delete('/pagadetodo/cancela-pago', [$pdt, 'cancelaPago']);
-
-    // Y LAS DEL SISTEMA ANTERIOR, que la cuenta de producción del
-    // proveedor todavía tiene dadas de alta. Sin secreto: las protege la
-    $r->get   ('/Service/ConsultaClabe',      [$pdt, 'consultaClabe']);
-    $r->post  ('/Service/PagoClabe',          [$pdt, 'pagoClabe']);
-    $r->get   ('/Service/ConsultaReferencia', [$pdt, 'consultaReferencia']);
-    $r->post  ('/Service/PagoReferencia',     [$pdt, 'pagoReferencia']);
-    $r->post  ('/Service/PagoLinea',          [$pdt, 'pagoLiga']);
-    $r->post  ('/Service/EntregarPagoLiga',   [$pdt, 'pagoLiga']);
-    $r->post  ('/Service/CancelaPago',        [$pdt, 'cancelaPago']);
-    $r->delete('/Service/CancelaPago',        [$pdt, 'cancelaPago']);
-}
-
-// ── Los avisos de Paga de Todo ──
-// Son públicas porque el proveedor pega desde sus servidores: no trae
-// cookie, ni sesión, ni usuario. Lo que las protege es el secreto que va
-// en la URL (?k=...), guardado en config/integraciones.php.
-//
-// Las direcciones que hay que dar de alta en el panel del Sandbox son
-// estas mismas con el secreto pegado. Ver LEEME.md.
-//
-// SE REGISTRAN SIEMPRE, aunque la integración esté apagada.
-//
-// Antes colgaban de `activa('spei')`: con una credencial de menos en
-// config/integraciones.php las rutas NI EXISTÍAN, el proveedor recibía
-// un 404 de la página de error genérica y no se escribía una sola
-// línea en el registro. Desde fuera parecía que el proveedor no estaba
-// llamando. Y como no recibía un 200, daba cada cobro por no
-// autorizado y lo revertía: al cliente le regresaba su dinero sin que
-// nadie supiera por qué.
-//
-// Ahora la ruta siempre responde. Si falta configuración lo dice en el
-// registro, con el nombre de lo que falta.
-{
     $pdt = 'LibertyFin\\Controlador\\PagosEntrantesControlador';
     // CON EL SECRETO EN LA RUTA. Es la forma recomendada: el proveedor
     // AÑADE «/?r=REFERENCIA» a la URL que se le da de alta, y pegado
