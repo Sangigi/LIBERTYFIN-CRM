@@ -40,34 +40,39 @@ final class Arranque
      *   comisiones  si | no
      */
     const PERFILES = [
-        'profesional' => ['nombre' => 'Servicios profesionales', 'ejemplo' => 'Contabilidad, legal, consultoría, marketing',
+        'despacho'     => ['nombre' => 'Despacho jurídico', 'ejemplo' => 'Civil, mercantil, familiar, laboral, penal',
                           'ilu' => 'maletin', 'vende' => 'servicios', 'cobro' => 'anticipo', 'iva' => '16', 'comisiones' => 'si',
-                          'areas' => ['Contabilidad', 'Fiscal', 'Legal', 'Consultoría'],
-                          'modulos' => ['cotizaciones', 'igualas', 'seguimiento', 'expediente']],
-        'belleza'     => ['nombre' => 'Salud y belleza', 'ejemplo' => 'Spa, estética, barbería, consultorio',
-                          'ilu' => 'tijeras', 'vende' => 'ambos', 'cobro' => 'completo', 'iva' => '16', 'comisiones' => 'si',
-                          'areas' => ['Tratamientos', 'Cortes y peinados', 'Productos'],
-                          'modulos' => ['agenda', 'paquetes', 'expediente']],
-        'tienda'      => ['nombre' => 'Tienda o comercio', 'ejemplo' => 'Abarrotes, ropa, papelería, refacciones',
-                          'ilu' => 'tienda', 'vende' => 'productos', 'cobro' => 'completo', 'iva' => '16', 'comisiones' => 'no',
-                          'areas' => ['General'],
-                          'modulos' => ['compras']],
-        // Sin educación: escuelas y academias no son mercado de Libertyfin.
-        'otro'        => ['nombre' => 'Otro giro', 'ejemplo' => 'Lo ajustamos con tus respuestas',
+                          'areas' => ['Mercantil', 'Familiar', 'Civil', 'Penal', 'Laboral'],
+                          'modulos' => ['prospectos', 'canales', 'cotizaciones', 'expediente', 'agenda', 'legal']],
+        'seguros'      => ['nombre' => 'Agencia de seguros', 'ejemplo' => 'Autos, vida, gastos médicos, daños',
+                          'ilu' => 'maletin', 'vende' => 'servicios', 'cobro' => 'completo', 'iva' => '16', 'comisiones' => 'si',
+                          'areas' => ['Autos', 'Vida', 'Gastos médicos', 'Daños', 'Empresarial'],
+                          'modulos' => ['prospectos', 'canales', 'cotizaciones', 'expediente', 'agenda', 'seguros']],
+        'inmobiliaria' => ['nombre' => 'Inmobiliaria', 'ejemplo' => 'Venta y renta de casas, locales, terrenos',
+                          'ilu' => 'tienda', 'vende' => 'servicios', 'cobro' => 'anticipo', 'iva' => '16', 'comisiones' => 'si',
+                          'areas' => ['Venta', 'Renta', 'Administración'],
+                          'modulos' => ['prospectos', 'canales', 'cotizaciones', 'expediente', 'agenda', 'seguimiento']],
+        'profesional'  => ['nombre' => 'Servicios profesionales', 'ejemplo' => 'Contabilidad, consultoría, marketing, diseño',
+                          'ilu' => 'maletin', 'vende' => 'servicios', 'cobro' => 'anticipo', 'iva' => '16', 'comisiones' => 'si',
+                          'areas' => ['Contabilidad', 'Fiscal', 'Consultoría', 'Marketing'],
+                          'modulos' => ['prospectos', 'canales', 'cotizaciones', 'igualas', 'seguimiento', 'expediente']],
+        'belleza'      => ['nombre' => 'Salud y belleza', 'ejemplo' => 'Spa, estética, barbería, consultorio',
+                          'ilu' => 'tijeras', 'vende' => 'servicios', 'cobro' => 'completo', 'iva' => '16', 'comisiones' => 'si',
+                          'areas' => ['Tratamientos', 'Cortes y peinados'],
+                          'modulos' => ['prospectos', 'canales', 'agenda', 'paquetes', 'expediente']],
+        'otro'         => ['nombre' => 'Otro giro', 'ejemplo' => 'Lo ajustamos con tus respuestas',
                           'ilu' => 'estrella', 'vende' => 'servicios', 'cobro' => 'completo', 'iva' => 'sin', 'comisiones' => 'no',
-                          'areas' => [], 'modulos' => []],
-        // ── Próximamente: el sistema todavía no está pensado para ellos ──
-        'restaurante' => ['nombre' => 'Restaurante o cafetería', 'ilu' => 'cubiertos',
-                          'proximamente' => 'Mesas, comandas y propinas'],
-        'hotel'       => ['nombre' => 'Hotelería', 'ilu' => 'cama',
-                          'proximamente' => 'Habitaciones, reservas y estancias'],
+                          'areas' => [], 'modulos' => ['prospectos', 'canales']],
+        // Tienda, restaurante y hotelería NO van aquí: necesitan punto de
+        // venta, y eso es LibertyFin POS, el otro producto.
     ];
-
     /**
      * Los módulos que se ofrecen en la pregunta «Herramientas». Inventario y
      * Comisiones no van aquí: los deciden «¿Qué vendes?» y «¿Pagas comisiones?».
      */
-    const MODULOS = ['agenda', 'paquetes', 'cotizaciones', 'igualas', 'seguimiento', 'expediente', 'compras'];
+    const MODULOS = ['prospectos', 'canales', 'cotizaciones', 'expediente',
+                     'agenda', 'seguimiento', 'igualas', 'paquetes',
+                     'legal', 'seguros'];
 
     const VENDE      = ['servicios', 'productos', 'ambos'];
     const COBRO      = ['completo', 'anticipo'];
@@ -76,10 +81,13 @@ final class Arranque
 
     /** El giro que escogió en el registro → el perfil que le corresponde. */
     const DEL_REGISTRO = [
-        'Contabilidad y fiscal' => 'profesional', 'Despacho legal' => 'profesional',
+        'Despacho legal' => 'despacho', 'Despacho jurídico' => 'despacho',
+        'Agencia de seguros' => 'seguros', 'Seguros' => 'seguros',
+        'Inmobiliaria' => 'inmobiliaria', 'Bienes raíces' => 'inmobiliaria',
+        'Contabilidad y fiscal' => 'profesional',
         'Marketing y publicidad' => 'profesional', 'Consultoría' => 'profesional',
         'Salud y bienestar' => 'belleza', 'Belleza y estética' => 'belleza',
-        'Tienda o comercio' => 'tienda',
+        // 'Tienda o comercio' se fue: ese giro necesita punto de venta.
     ];
 
     private $db;

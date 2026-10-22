@@ -180,8 +180,6 @@ $MC = \LibertyFin\Servicio\Modulos::CATALOGO;
                 <span class="txt"><b><?= P::e($m['nombre']) ?></b><small><?= P::e($m['desc']) ?></small>
                   <?php if (!$enPlan): $pl = \LibertyFin\Servicio\Modulos::planesCon($k); ?>
                     <em><?= $pl ? 'Desde el plan ' . P::e($pl[0]) : 'En un plan superior' ?></em>
-                  <?php elseif ($k === 'compras'): ?>
-                    <em class="req" hidden>Necesita que vendas productos</em>
                   <?php endif; ?></span>
                 <i class="ok" aria-hidden="true"></i>
               </label>

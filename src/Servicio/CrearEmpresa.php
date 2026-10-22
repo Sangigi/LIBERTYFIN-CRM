@@ -488,25 +488,80 @@ final class CrearEmpresa
             return ['ok' => false, 'error' => $msg];
         };
 
-        $r = $llamar('Mysql', 'create_database', ['name' => $cp['usuario'] . '_' . $sufijo]);
-        if (!$r['ok']) return $r;
+        $base = $cp['usuario'] . '_' . $sufijo;
+
+        // DOS LLAMADAS, DOS FALLOS DISTINTOS.
+        //
+        // Antes las dos acababan en «cPanel no creó la base», y eso es
+        // mentira la mitad de las veces: si lo que falla es el permiso,
+        // la base SÍ se creó. Perseguir el error equivocado cuesta horas,
+        // y encima cada intento deja una base huérfana que nadie borra.
+        $r = $llamar('Mysql', 'create_database', ['name' => $base]);
+        if (!$r['ok']) {
+            $r['error'] = 'al crear la base «' . $base . '»: ' . $r['error'];
+            return $r;
+        }
         // EL USUARIO DE MYSQL, NO EL DE CPANEL.
         //
         // Sin `usuario_bd` esto arma «cuenta_cuenta», que casi nunca
         // existe: la base queda creada y sin nadie que pueda entrar, y el
         // error sale después, al conectarse, lejos de aquí. Si no está
         // configurado, se dice ahora.
+        // El usuario de MySQL al que se le dan permisos. Sin configurar,
+        // se usa el de config/config.php, que es el que el sistema va a
+        // emplear de verdad para conectarse: pedirlo dos veces en dos
+        // archivos es pedir que un día no coincidan.
         $usuarioBd = trim((string)($cp['usuario_bd'] ?? ''));
-        if ($usuarioBd === '') {
-            return ['ok' => false, 'error' =>
-                'Falta «usuario_bd» en la sección cpanel de config/integraciones.php: '
-                . 'es el usuario de MySQL que tendrá permisos sobre la base nueva, '
-                . 'sin el prefijo de la cuenta. La base se creó, pero sin permisos.'];
+        if ($usuarioBd !== '') {
+            $usuarioMysql = $cp['usuario'] . '_' . $usuarioBd;
+        } else {
+            $usuarioMysql = self::usuarioDeConfig();
         }
-        return $llamar('Mysql', 'set_privileges_on_database', [
-            'user'       => $cp['usuario'] . '_' . $usuarioBd,
-            'database'   => $cp['usuario'] . '_' . $sufijo,
+        if ($usuarioMysql === null) {
+            self::borrarBase($llamar, $base);
+            return ['ok' => false, 'error' =>
+                'la base se creó pero no se sabe a qué usuario de MySQL darle '
+                . 'permisos. Pon «usuario_bd» en config/integraciones.php → cpanel. '
+                . 'La base se borró para no dejarla a medias.'];
+        }
+
+        $p = $llamar('Mysql', 'set_privileges_on_database', [
+            'user'       => $usuarioMysql,
+            'database'   => $base,
             'privileges' => 'ALL PRIVILEGES',
         ]);
+
+        if (!$p['ok']) {
+            // La base existe y nadie puede entrar a ella. Dejarla ahí
+            // ensucia la cuenta con una base muerta por cada intento, y
+            // además gasta cuota. Se borra y se dice exactamente qué pasó.
+            $borrada = self::borrarBase($llamar, $base);
+            $p['error'] = 'la base «' . $base . '» se creó, pero falló el permiso '
+                . 'para el usuario «' . $usuarioMysql . '»: ' . $p['error']
+                . ($borrada ? ' · la base se borró' : ' · OJO: no se pudo borrar, quedó huérfana')
+                . ' · comprueba que ese usuario de MySQL exista en cPanel';
+        }
+        return $p;
+    }
+
+    /** El usuario de MySQL con el que el sistema se conecta de verdad. */
+    private static function usuarioDeConfig()
+    {
+        $ruta = dirname(__DIR__, 2) . '/config/config.php';
+        if (!is_file($ruta)) return null;
+        $c = require $ruta;
+        $u = trim((string)($c['bd']['usuario'] ?? ''));
+        return $u !== '' ? $u : null;
+    }
+
+    /** Deshace una base a medio crear. Si no se puede, se dice. */
+    private static function borrarBase(callable $llamar, $base)
+    {
+        try {
+            $r = $llamar('Mysql', 'delete_database', ['name' => $base]);
+            return !empty($r['ok']);
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 }

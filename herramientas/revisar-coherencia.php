@@ -12,7 +12,7 @@
  */
 $raiz = dirname(__DIR__);
 foreach (['Dominio/Permisos', 'Dominio/Alcance', 'Servicio/Modulos',
-          'Servicio/Integraciones', 'Servicio/Entrada',
+          'Servicio/Integraciones', 'Servicio/Entrada', 'Servicio/Arranque',
           'Datos/ProspectoRepo', 'Datos/AsuntoRepo', 'Datos/PolizaRepo'] as $c) {
     require_once $raiz . '/src/' . $c . '.php';
 }
@@ -23,6 +23,7 @@ use LibertyFin\Servicio\Integraciones;
 use LibertyFin\Servicio\Entrada;
 use LibertyFin\Datos\ProspectoRepo;
 use LibertyFin\Datos\AsuntoRepo;
+use LibertyFin\Servicio\Arranque;
 
 $mal = [];
 
@@ -75,7 +76,27 @@ foreach (AsuntoRepo::ETAPAS as $m => $et) {
     if (!isset($et['sin_iniciar']))        $mal[] = "la materia «$m» no arranca en «sin_iniciar»";
 }
 
-// 7. Las integraciones que el código da por hechas.
+// 7. El asistente de bienvenida.
+//
+// Ofrece módulos por nombre, en listas fijas. Nombrar uno que ya no
+// existe NO revienta al revisar: revienta en la cara del cliente la
+// primera vez que entra, que es el peor sitio posible. Pasó con
+// «compras» al separar del POS.
+foreach (Arranque::MODULOS as $m) {
+    if (!in_array($m, $cat, true)) $mal[] = "el asistente ofrece el módulo «$m», que no existe";
+}
+foreach (Arranque::PERFILES as $k => $p) {
+    foreach (($p['modulos'] ?? []) as $m) {
+        if (!in_array($m, $cat, true)) $mal[] = "el perfil «$k» enciende «$m», que no existe";
+    }
+}
+foreach (Arranque::DEL_REGISTRO as $giro => $perfil) {
+    if (!isset(Arranque::PERFILES[$perfil])) {
+        $mal[] = "el giro «$giro» apunta al perfil «$perfil», que no existe";
+    }
+}
+
+// 8. Las integraciones que el código da por hechas.
 foreach (['meta', 'tiktok', 'linkedin', 'google_ads', 'libertypay'] as $i) {
     if (!isset(Integraciones::CATALOGO[$i])) $mal[] = "falta la integración «$i» en el catálogo";
 }
