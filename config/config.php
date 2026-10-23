@@ -6,7 +6,7 @@ return [
         'host'    => 'grupoideasmx.com',
         'usuario' => 'grupoide_developer',
         'clave'   => '@Mantequilla97',
-        'principal' => 'grupoide_crm',
+        'principal' => 'grupoidecrm',
         // 'puerto' => 3306,   // solo si MySQL no está en el puerto de siempre
     ],
 
