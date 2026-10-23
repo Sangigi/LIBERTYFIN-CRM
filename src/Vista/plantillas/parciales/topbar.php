@@ -17,6 +17,17 @@ use LibertyFin\Vista\Plantilla as P;
   </div>
 
   <div class="lf-acc">
+    <?php /* El lanzador de la paleta. Parece un buscador y es un botón:
+             un atajo que no se ve no lo usa nadie, y Ctrl+K no se
+             descubre solo. */ ?>
+    <button type="button" class="cmdk-lanzar" data-cmdk
+            aria-label="Buscar e ir (Ctrl+K)" title="Buscar e ir">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <span>Buscar…</span>
+      <kbd>Ctrl K</kbd>
+    </button>
+
     <?php /* La campana de soporte: mensajes de clientes que no has leído.
              La llena assets/js/lf-chat.js; aquí solo va el lugar. */
     if (\LibertyFin\Dominio\Permisos::puede('ver.tickets')): ?>

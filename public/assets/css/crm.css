@@ -566,3 +566,116 @@ input[type="file"]{ max-width:100%; font-size:12.5px; }
    cierra a la izquierda. */
 .lf-ang-ico{ transition:transform .22s var(--crm-ease); }
 html.menu-ancho .lf-ang-ico{ transform:rotate(180deg); }
+
+/* ════════════════════════════════════════════════════════
+   LA PALETA DE COMANDOS (Ctrl+K)
+   ════════════════════════════════════════════════════════
+   Flota alta, no centrada: a un tercio de la pantalla, que es donde el
+   ojo ya está. Centrada verticalmente obliga a bajar la mirada y los
+   resultados crecen hacia abajo tapando lo que importa. */
+
+.cmdk-velo{
+  position:fixed; inset:0; z-index:300;
+  background:rgba(12,20,16,.42);
+  backdrop-filter:blur(3px);
+  opacity:0; pointer-events:none;
+  transition:opacity .16s var(--crm-ease);
+}
+.cmdk-velo.on{ opacity:1; pointer-events:auto; }
+
+.cmdk{
+  position:fixed; z-index:301;
+  top:14vh; left:50%;
+  width:min(640px, calc(100vw - 32px));
+  transform:translateX(-50%) translateY(-10px) scale(.98);
+  opacity:0; pointer-events:none;
+  background:var(--lf-sup);
+  border-radius:16px;
+  box-shadow:0 0 0 1px var(--lf-linea-f), 0 24px 70px rgba(12,20,16,.26);
+  overflow:hidden;
+  transition:opacity .16s var(--crm-ease), transform .22s var(--crm-ease-s);
+}
+.cmdk.on{ opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0) scale(1); }
+
+.cmdk-barra{
+  display:flex; align-items:center; gap:12px;
+  padding:16px 18px;
+  box-shadow:inset 0 -1px 0 var(--lf-linea);
+}
+.cmdk-lupa{ width:19px; height:19px; color:var(--lf-tinta-4); flex:0 0 auto; }
+.cmdk-barra input{
+  flex:1; border:none; outline:none; background:transparent;
+  font:inherit; font-size:16px; color:var(--lf-tinta);
+  letter-spacing:-.01em;
+}
+.cmdk-barra input::placeholder{ color:var(--lf-tinta-4); }
+
+kbd{
+  font:inherit; font-size:10.5px; font-weight:600;
+  background:var(--lf-vidrio); color:var(--lf-tinta-4);
+  padding:3px 6px; border-radius:5px; line-height:1.4;
+  box-shadow:inset 0 -1px 0 var(--lf-linea-f);
+}
+
+.cmdk-lista{ max-height:min(52vh, 430px); overflow-y:auto; padding:7px; }
+.cmdk-grupo{
+  font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+  font-weight:600; color:var(--lf-tinta-4);
+  padding:11px 11px 6px;
+}
+.cmdk-it{
+  display:flex; align-items:baseline; gap:11px;
+  padding:9px 11px; border-radius:9px;
+  text-decoration:none; color:var(--lf-tinta);
+  /* Sin transición: con el teclado se recorren diez en un segundo y
+     una animación de 150 ms deja la selección siempre un paso atrás. */
+}
+.cmdk-it .cmdk-t{ font-size:14px; font-weight:500; letter-spacing:-.01em; }
+.cmdk-it .cmdk-s{
+  font-size:12.5px; color:var(--lf-tinta-4);
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.cmdk-it.on{ background:var(--lf-brand); }
+.cmdk-it.on .cmdk-t{ color:#fff; font-weight:600; }
+.cmdk-it.on .cmdk-s{ color:rgba(255,255,255,.75); }
+
+.cmdk-nada{
+  padding:30px; text-align:center; color:var(--lf-tinta-4); font-size:13.5px;
+  display:flex; align-items:center; justify-content:center; gap:9px;
+}
+.cmdk-pulso{
+  width:7px; height:7px; border-radius:50%; background:var(--lf-brand);
+  animation:cmdkPulso .9s ease-in-out infinite;
+}
+@keyframes cmdkPulso{ 0%,100%{opacity:.25;transform:scale(.8)} 50%{opacity:1;transform:scale(1.15)} }
+
+.cmdk-pie{
+  display:flex; align-items:center; gap:16px;
+  padding:9px 16px; font-size:11.5px; color:var(--lf-tinta-4);
+  background:var(--lf-sup-2);
+  box-shadow:inset 0 1px 0 var(--lf-linea);
+}
+.cmdk-pie span{ display:flex; align-items:center; gap:5px; }
+.cmdk-marca{ margin-left:auto; font-weight:600; color:var(--lf-tinta-4); letter-spacing:-.01em; }
+
+/* El botón de la barra de arriba. Parece un campo de búsqueda pero es
+   un botón: hace evidente que la paleta existe, porque un atajo que
+   nadie ve no lo usa nadie. */
+.cmdk-lanzar{
+  display:flex; align-items:center; gap:9px;
+  background:var(--lf-sup); border:1px solid var(--lf-linea);
+  border-radius:999px; padding:6px 10px 6px 13px;
+  color:var(--lf-tinta-4); font:inherit; font-size:13px; cursor:pointer;
+  transition:border-color .16s var(--crm-ease), color .16s var(--crm-ease);
+  min-width:210px;
+}
+.cmdk-lanzar:hover{ border-color:var(--lf-tinta-4); color:var(--lf-tinta-2); }
+.cmdk-lanzar svg{ width:15px; height:15px; flex:0 0 auto; }
+.cmdk-lanzar span{ flex:1; text-align:left; }
+@media(max-width:720px){ .cmdk-lanzar{ min-width:0; padding:7px; } .cmdk-lanzar span,.cmdk-lanzar kbd{ display:none; } }
+
+@media (prefers-reduced-motion: reduce){
+  .cmdk{ transition:opacity .01ms; transform:translateX(-50%); }
+  .cmdk.on{ transform:translateX(-50%); }
+  .cmdk-pulso{ animation:none; }
+}
