@@ -29,13 +29,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
-<?php /* La versión es la fecha del archivo: con `?v=1` fijo, el navegador
-         seguía usando la hoja vieja después de cada cambio. */
-$hojaLimpia = __DIR__ . '/../../../public/assets/css/libertyfin.css'; ?>
-<link rel="stylesheet" href="/assets/css/libertyfin.css?v=<?= is_file($hojaLimpia) ? filemtime($hojaLimpia) : '1' ?>">
 <?php /* La identidad del CRM va DESPUÉS: solo redefine variables, no
    toca ningún componente. Ver el encabezado de crm.css. */
 $hojaCrm = __DIR__ . '/../../../public/assets/css/crm.css'; ?>
+<?php /* libertyfin.css ya NO se carga: eran 5.000 líneas del punto
+   de venta con 120 reglas `!important` —incluida .btn— que ganaban a
+   cualquier estilo escrito encima. crm.css es ahora la hoja única. */ ?>
 <link rel="stylesheet" href="/assets/css/crm.css?v=<?= is_file($hojaCrm) ? filemtime($hojaCrm) : '1' ?>">
 </head>
 <?php /* `cuerpo`: el registro trae su propia composición (dos columnas);

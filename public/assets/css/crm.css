@@ -1,29 +1,41 @@
 /* ════════════════════════════════════════════════════════
-   LIBERTYFIN CRM · identidad
+   LIBERTYFIN CRM · hoja única
    ════════════════════════════════════════════════════════
-   Va DESPUÉS de libertyfin.css y redefine variables y chasis. El verde
-   de la casa no se toca: los dos productos son LibertyFin.
+   Sustituye a libertyfin.css, no lo acompaña.
+
+   POR QUÉ SE QUITÓ LA OTRA
+
+   Eran 5.000 líneas del punto de venta con 120 reglas marcadas
+   `!important`, incluida `.btn`. Cualquier estilo escrito encima
+   perdía, y por eso el CRM seguía viéndose como el POS por mucho que
+   se redefinieran variables: no era cuestión de orden de carga, era
+   que esas reglas no se podían ganar.
 
    LAS CUATRO REGLAS
 
    1. BLANCOS CÁLIDOS. Un #ffffff plano sobre #f8fafc es el fondo de
       cualquier plantilla. Un hueso con una pizca de amarillo se
       reconoce y cansa menos a las seis de la tarde.
-   2. SIN DEGRADADOS. Fingen un volumen que no existe, y con tres
-      juntos la pantalla se recarga. Color plano y una línea.
-   3. ELEVACIÓN POR CONTORNO. Un borde de un píxel, no una nube
-      difusa. Las sombras grandes son lo que delata una plantilla.
+   2. SIN DEGRADADOS. Fingen un volumen que no existe.
+   3. ELEVACIÓN POR CONTORNO, no por sombra difusa. Las sombras
+      grandes son lo que delata una plantilla comprada.
    4. NADA PASA DE 240 ms Y SOLO SE MUEVEN transform Y opacity.
-      Animar width o height recompone la página en cada cuadro, y eso
-      es lo que se siente como tirones.
    ════════════════════════════════════════════════════════ */
 
+/* ── 1 · BASE ──────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+
 :root{
-  /* Neutros cálidos */
+  --lf-brand:#4baa5c;
+  --lf-brand-2:#3a8a48;
+  --lf-brand-3:#7cc389;
+  --lf-brand-d:#2f7039;
+  --lf-brand-soft:#eef6f0;
+
   --lf-lienzo:#faf9f6;
   --lf-sup:#ffffff;
   --lf-sup-2:#f4f3ef;
-  --lf-panel:#ffffff;
   --lf-vidrio:#efeee9;
   --lf-tinta:#191814;
   --lf-tinta-2:#5b574e;
@@ -32,273 +44,410 @@
   --lf-linea:#e8e6e0;
   --lf-linea-f:#d8d5cc;
 
-  /* Semánticos propios: en el POS el verde ES la marca y también el
-     «bien». Aquí se separan para que el ámbar y el rojo tengan el mismo
-     peso visual y no desentonen con el papel cálido. */
   --lf-amb:#b8791c;
   --lf-rojo:#bc4237;
   --lf-info:#4a7fb5;
-  --crm-morado:#6b6bc4;
-  --crm-gris:#b4b0a6;
+  --lf-morado:#6b6bc4;
 
-  --crm-e:cubic-bezier(.22,1,.36,1);
-  --crm-t:.16s;
-  --crm-e1:0 0 0 1px var(--lf-linea);
-  --crm-e2:0 2px 12px #1918140f;
-  --crm-e3:0 16px 48px #19181426;
+  --r-xs:8px; --r-sm:11px; --r:14px; --r-lg:18px;
+  --e:cubic-bezier(.22,1,.36,1);
+  --t:.16s;
+  --side-w:214px;
 
-  --lf-r-xs:8px; --lf-r-sm:11px; --lf-r:14px; --lf-r-lg:18px; --lf-r-panel:22px;
-  --lf-side-w:214px;
-  --lf-head-h:auto;
+  --fuente:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"JetBrains Mono",SFMono-Regular,Menlo,monospace;
 }
 
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --lf-lienzo:#14150f; --lf-sup:#1b1d16; --lf-sup-2:#22241c; --lf-panel:#1b1d16;
-    --lf-vidrio:#282b21;
+    --lf-lienzo:#14150f; --lf-sup:#1b1d16; --lf-sup-2:#22241c; --lf-vidrio:#282b21;
     --lf-tinta:#edece6; --lf-tinta-2:#b2afa4; --lf-tinta-3:#857f73; --lf-tinta-4:#67625a;
-    --lf-linea:#2b2e24; --lf-linea-f:#3a3e31;
+    --lf-linea:#2b2e24; --lf-linea-f:#3a3e31; --lf-brand-soft:#1c2a1e;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --lf-lienzo:#14150f; --lf-sup:#1b1d16; --lf-sup-2:#22241c; --lf-panel:#1b1d16;
-  --lf-vidrio:#282b21;
+  --lf-lienzo:#14150f; --lf-sup:#1b1d16; --lf-sup-2:#22241c; --lf-vidrio:#282b21;
   --lf-tinta:#edece6; --lf-tinta-2:#b2afa4; --lf-tinta-3:#857f73; --lf-tinta-4:#67625a;
-  --lf-linea:#2b2e24; --lf-linea-f:#3a3e31;
+  --lf-linea:#2b2e24; --lf-linea-f:#3a3e31; --lf-brand-soft:#1c2a1e;
+  color-scheme:dark;
 }
-
 @media (prefers-reduced-motion: reduce){
-  :root{ --crm-t:.01ms; }
-  *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; }
+  :root{--t:.01ms}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important}
 }
 
-/* ════════════════════════════════════════════════════════
-   CHASIS
-   ════════════════════════════════════════════════════════ */
+body{
+  background:var(--lf-lienzo); color:var(--lf-tinta);
+  font:15px/1.5 var(--fuente); -webkit-font-smoothing:antialiased;
+  font-variant-numeric:tabular-nums;
+}
+a{color:var(--lf-brand-2);text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3,h4,h5{font-weight:650;letter-spacing:-.025em;line-height:1.2}
+h1{font-size:26px;letter-spacing:-.035em}
+h2{font-size:19px}h3{font-size:16px}h4{font-size:14px}
+b,strong{font-weight:600}
+small{font-size:12.5px}
+hr{border:none;border-top:1px solid var(--lf-linea);margin:18px 0}
+img,svg{max-width:100%}
+ul,ol{padding-left:1.2em}
+code,.lf-mono,.tu-mono{font-family:var(--mono);font-size:.92em}
+::selection{background:color-mix(in srgb,var(--lf-brand) 24%,transparent)}
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  outline:2px solid var(--lf-brand);outline-offset:2px;border-radius:var(--r-xs)}
+[hidden]{display:none!important}
+
+*{scrollbar-width:thin;scrollbar-color:var(--lf-linea-f) transparent}
+*::-webkit-scrollbar{width:9px;height:9px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--lf-linea-f);border-radius:999px;
+  border:2px solid transparent;background-clip:content-box}
+*::-webkit-scrollbar-thumb:hover{background:var(--lf-tinta-4);background-clip:content-box}
+
+/* ── 2 · CHASIS ───────────────────────────────── */
+.lf-app{display:flex;min-height:100vh}
 .lf-side{
-  position:fixed; top:0; left:0; bottom:0; z-index:50;
-  width:var(--lf-side-w);
-  background:var(--lf-lienzo);
-  border:none; border-right:1px solid var(--lf-linea); border-radius:0;
-  padding:20px 12px; overflow-y:auto; overflow-x:visible;
-  display:flex; flex-direction:column; gap:2px;
-  transition:width .24s var(--crm-e);
+  position:fixed;top:0;left:0;bottom:0;z-index:50;width:var(--side-w);
+  background:var(--lf-lienzo);border-right:1px solid var(--lf-linea);
+  padding:20px 12px;overflow-y:auto;overflow-x:visible;
+  display:flex;flex-direction:column;gap:2px;
+  transition:width .24s var(--e);
 }
 .lf-main{
-  margin-left:var(--lf-side-w);
-  background:var(--lf-lienzo);
-  border-radius:0; min-height:100vh; min-height:100dvh;
-  display:flex; flex-direction:column;
-  transition:margin-left .24s var(--crm-e);
+  margin-left:var(--side-w);background:var(--lf-lienzo);
+  min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;
+  transition:margin-left .24s var(--e);
 }
 
-/* El menú reducido: 62px. Cada icono enseña su nombre al pasar, porque
-   reducir tiene que ser ganar sitio, no esconder el sistema. */
-html.menu-chico{ --lf-side-w:62px; }
-html.menu-chico .lf-side{ padding:20px 9px; overflow-x:visible; }
-html.menu-chico .lf-nav a > span,
-html.menu-chico .lf-nav a b,
-html.menu-chico .sec,
-html.menu-chico .lf-marca > span:not(.g),
-html.menu-chico .lf-ucard b,
-html.menu-chico .lf-ucard small,
-html.menu-chico .lf-ang-txt{ display:none; }
-html.menu-chico .lf-nav a{ justify-content:center; padding:9px 0; }
-html.menu-chico .lf-marca{ justify-content:center; padding:0 0 18px; }
-html.menu-chico .lf-ucard{ justify-content:center; }
+html.menu-chico{--side-w:62px}
+html.menu-chico .lf-side{padding:20px 9px}
+html.menu-chico .lf-nav a > span,html.menu-chico .lf-nav a b,
+html.menu-chico .sec,html.menu-chico .lf-marca > span:not(.g),
+html.menu-chico .lf-ucard b,html.menu-chico .lf-ucard small,
+html.menu-chico .lf-ang-txt{display:none}
+html.menu-chico .lf-nav a{justify-content:center;padding:9px 0}
+html.menu-chico .lf-marca,html.menu-chico .lf-ucard,
+html.menu-chico .lf-angosta{justify-content:center;padding-left:0;padding-right:0}
 /* Los títulos de grupo no caben, pero el aire que separaban sí hace
    falta: pasan a una raya. */
-html.menu-chico .sec{
-  display:block; height:1px; padding:0; margin:11px 8px; font-size:0;
-  background:var(--lf-linea); overflow:hidden;
-}
+html.menu-chico .sec{display:block;height:1px;padding:0;margin:11px 8px;
+  font-size:0;background:var(--lf-linea);overflow:hidden}
+/* Cada icono enseña su nombre: reducir es ganar sitio, no esconder. */
 html.menu-chico .lf-nav a::after{
-  content:attr(title);
-  position:absolute; left:calc(100% + 10px); top:50%;
+  content:attr(title);position:absolute;left:calc(100% + 10px);top:50%;
   transform:translateY(-50%) translateX(-4px);
-  background:var(--lf-tinta); color:var(--lf-lienzo);
-  padding:6px 11px; border-radius:8px; font-size:12.5px; font-weight:500;
-  white-space:nowrap; pointer-events:none; z-index:60;
-  box-shadow:0 6px 20px #19181426;
-  opacity:0; transition:opacity var(--crm-t) var(--crm-e), transform .18s var(--crm-e);
-}
+  background:var(--lf-tinta);color:var(--lf-lienzo);
+  padding:6px 11px;border-radius:8px;font-size:12.5px;font-weight:500;
+  white-space:nowrap;pointer-events:none;z-index:60;
+  box-shadow:0 6px 20px #19181426;opacity:0;
+  transition:opacity var(--t) var(--e),transform .18s var(--e)}
 html.menu-chico .lf-nav a:hover::after,
-html.menu-chico .lf-nav a:focus-visible::after{ opacity:1; transform:translateY(-50%); }
+html.menu-chico .lf-nav a:focus-visible::after{opacity:1;transform:translateY(-50%)}
 
-/* ── Menú ── */
-.lf-marca{ display:flex; align-items:center; gap:10px; padding:0 10px 22px;
-  font-weight:650; letter-spacing:-.03em; font-size:16px; }
-.lf-marca .g{
-  width:28px; height:28px; border-radius:8px; background:var(--lf-brand);
-  color:#fff; display:grid; place-items:center; font-size:13px; font-weight:700;
-}
-.lf-marca b{ font-weight:650; }
-.lf-nav{ display:flex; flex-direction:column; gap:2px; }
+.lf-marca{display:flex;align-items:center;gap:10px;padding:0 10px 22px;
+  font-weight:650;letter-spacing:-.03em;font-size:16px;color:var(--lf-tinta)}
+.lf-marca .g{width:28px;height:28px;border-radius:8px;background:var(--lf-brand);
+  color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700;flex:0 0 auto;
+  object-fit:cover}
+.lf-marca span{min-width:0;line-height:1.25}
+.lf-marca b{display:block;font-weight:650;font-size:15px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.lf-marca small{color:var(--lf-tinta-3);font-size:11.5px;font-weight:400}
+
+.lf-nav{display:flex;flex-direction:column;gap:2px}
 .lf-nav a{
-  position:relative;
-  display:flex; align-items:center; gap:11px; padding:8px 10px; border-radius:9px;
-  color:var(--lf-tinta-2); text-decoration:none; font-size:14px; font-weight:500;
-  transition:background var(--crm-t) var(--crm-e), color var(--crm-t) var(--crm-e);
-}
-.lf-nav a svg{ width:17px; height:17px; flex:0 0 auto; opacity:.78; }
-.lf-nav a:hover{ background:var(--lf-sup-2); color:var(--lf-tinta); }
-.lf-nav a.on{ background:var(--lf-brand); color:#fff; font-weight:600; }
-.lf-nav a.on svg{ opacity:1; }
-.sec{
-  font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
-  color:var(--lf-tinta-4); font-weight:600; padding:16px 10px 6px;
-}
-.lf-ucard{ border-top:1px solid var(--lf-linea); padding-top:12px; }
-.lf-angosta{
-  display:flex; align-items:center; gap:9px; width:100%; background:none; border:none;
-  cursor:pointer; color:var(--lf-tinta-4); font:inherit; font-size:12.5px;
-  padding:9px 10px; border-radius:8px; border-top:none;
-  transition:background var(--crm-t) var(--crm-e), color var(--crm-t) var(--crm-e);
-}
-.lf-angosta:hover{ background:var(--lf-sup-2); color:var(--lf-tinta-2); }
-.lf-ang-ico{ font-size:16px; line-height:1; transition:transform .22s var(--crm-e); }
-html.menu-chico .lf-ang-ico{ transform:rotate(180deg); }
-html.menu-chico .lf-angosta{ justify-content:center; padding:9px 0; }
+  position:relative;display:flex;align-items:center;gap:11px;padding:8px 10px;
+  border-radius:9px;color:var(--lf-tinta-2);text-decoration:none;
+  font-size:14px;font-weight:500;
+  transition:background var(--t) var(--e),color var(--t) var(--e)}
+.lf-nav a:hover{background:var(--lf-sup-2);color:var(--lf-tinta);text-decoration:none}
+.lf-nav a svg{width:17px;height:17px;flex:0 0 auto;opacity:.78}
+.lf-nav a.on{background:var(--lf-brand);color:#fff;font-weight:600}
+.lf-nav a.on svg{opacity:1}
+.lf-nav a b{margin-left:auto;font-size:11px;font-weight:650;
+  background:#00000012;padding:1px 7px;border-radius:999px}
+.lf-nav a.on b{background:#ffffff2e}
+.sec{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--lf-tinta-4);font-weight:600;padding:16px 10px 6px}
+
+.lf-ucard{display:flex;align-items:center;gap:10px;margin-top:auto;
+  padding:12px 10px 2px;border-top:1px solid var(--lf-linea);color:var(--lf-tinta)}
+.lf-ucard .lf-av,.lf-ucard img{width:30px;height:30px;border-radius:50%;flex:0 0 auto}
+.lf-ucard b{display:block;font-size:13px;font-weight:600}
+.lf-ucard small{color:var(--lf-tinta-3);font-size:11.5px}
+.lf-angosta{display:flex;align-items:center;gap:9px;width:100%;background:none;
+  border:none;cursor:pointer;color:var(--lf-tinta-4);font:inherit;font-size:12.5px;
+  padding:9px 10px;border-radius:8px;
+  transition:background var(--t) var(--e),color var(--t) var(--e)}
+.lf-angosta:hover{background:var(--lf-sup-2);color:var(--lf-tinta-2)}
+.lf-ang-ico{font-size:16px;line-height:1;transition:transform .22s var(--e)}
+html.menu-chico .lf-ang-ico{transform:rotate(180deg)}
 
 /* ── Barra de arriba ── */
 .lf-top{
-  position:sticky; top:0; z-index:30;
-  padding:24px 32px 16px; gap:18px; flex-wrap:wrap;
-  background:var(--lf-lienzo); box-shadow:none; min-height:0;
-  align-items:flex-end;
-}
-.lf-top-tit{ flex:1; min-width:0; }
-.lf-top-tit h1{
-  font-size:26px; font-weight:650; letter-spacing:-.035em; line-height:1.12;
-  gap:10px; margin:0;
-}
-.lf-top-tit h1 svg{ display:none; }
-.lf-top-tit p{ margin:4px 0 0; font-size:14px; color:var(--lf-tinta-3); }
-.lf-main > :not(.lf-top){ padding-left:32px; padding-right:32px; }
+  position:sticky;top:0;z-index:30;display:flex;align-items:flex-end;
+  gap:18px;flex-wrap:wrap;padding:24px 32px 16px;background:var(--lf-lienzo)}
+.lf-top-tit{flex:1;min-width:0}
+.lf-top-tit h1{font-size:26px;font-weight:650;letter-spacing:-.035em;
+  display:flex;align-items:center;gap:10px}
+.lf-top-tit h1 > svg{display:none}
+.lf-top-tit p{margin:4px 0 0;font-size:14px;color:var(--lf-tinta-3)}
+.lf-acc{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lf-cont,.lf-hoja{padding:0 32px 44px;flex:1}
+.lf-main > :not(.lf-top){padding-left:32px;padding-right:32px}
+.lf-main > .lf-top{padding-left:32px;padding-right:32px}
 @media(max-width:720px){
-  .lf-top{ padding:20px 16px 12px; }
-  .lf-main > :not(.lf-top){ padding-left:16px; padding-right:16px; }
+  .lf-top{padding:18px 16px 12px}
+  .lf-main > :not(.lf-top),.lf-main > .lf-top{padding-left:16px;padding-right:16px}
+  .lf-cont,.lf-hoja{padding:0 16px 36px}
 }
 
-/* ════════════════════════════════════════════════════════
-   CONTENIDO
-   ════════════════════════════════════════════════════════ */
-.card,.stat-card{
-  border:1px solid var(--lf-linea); border-radius:var(--lf-r);
-  background:var(--lf-sup); box-shadow:none;
-  transition:border-color var(--crm-t) var(--crm-e);
+/* Menú en móvil: se desliza por encima. */
+.lf-cerrar-menu,.lf-abrir-menu{display:none}
+@media(max-width:860px){
+  .lf-side{transform:translateX(-100%);width:252px;
+    transition:transform .24s var(--e);box-shadow:0 0 40px #19181426}
+  .lf-side.abierto{transform:none}
+  .lf-main{margin-left:0}
+  .lf-cerrar-menu{display:grid;place-items:center;position:absolute;top:14px;right:12px;
+    width:30px;height:30px;border:none;background:transparent;color:var(--lf-tinta-3);
+    font-size:20px;cursor:pointer;border-radius:8px}
+  .lf-dedo{position:fixed;bottom:0;left:0;right:0;z-index:45;display:flex;
+    background:var(--lf-sup);border-top:1px solid var(--lf-linea);padding:6px 4px}
+  .lf-dedo a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:6px 2px;font-size:10.5px;color:var(--lf-tinta-3);text-decoration:none}
+  .lf-dedo a.on{color:var(--lf-brand)}
+  .lf-dedo svg{width:19px;height:19px}
 }
-.card:hover{ border-color:var(--lf-linea-f); box-shadow:none; }
+@media(min-width:861px){.lf-dedo{display:none}}
 
-/* Pestañas: subrayado, no pastilla rellena. La pastilla verde es el
-   patrón del POS y de otros mil paneles. */
-.nav-pills .nav-link,.lf-tabs a,.lf-pestanas a{
-  background:transparent !important; color:var(--lf-tinta-3);
-  border-radius:0; padding:9px 2px; margin-right:22px;
-  font-weight:500; font-size:13.5px;
-  box-shadow:inset 0 -2px 0 transparent;
-  transition:color var(--crm-t) var(--crm-e), box-shadow var(--crm-t) var(--crm-e);
-}
-.nav-pills .nav-link:hover,.lf-tabs a:hover,.lf-pestanas a:hover{
-  color:var(--lf-tinta); box-shadow:inset 0 -2px 0 var(--lf-linea-f);
-}
-.nav-pills .nav-link.active,.lf-tabs a.on,.lf-pestanas a.on,
-.nav-pills .nav-link[aria-selected="true"]{
-  color:var(--lf-tinta) !important; font-weight:600;
-  box-shadow:inset 0 -2px 0 var(--lf-brand);
-}
+/* ── 3 · COMPONENTES ──────────────────────────── */
+.card,.stat-card,.lf-tile{
+  background:var(--lf-sup);border:1px solid var(--lf-linea);border-radius:var(--r);
+  transition:border-color var(--t) var(--e)}
+.card:hover{border-color:var(--lf-linea-f)}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--lf-linea);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.card-header h2,.card-header h3,.card-title{font-size:15px;font-weight:650;margin:0}
+.card-body{padding:18px 20px}
+.card-footer{padding:14px 20px;border-top:1px solid var(--lf-linea);
+  background:var(--lf-sup-2);border-radius:0 0 var(--r) var(--r)}
 
-.alert{
-  border:1px solid var(--lf-linea); border-left:3px solid var(--lf-brand);
-  border-radius:var(--lf-r-sm); background:var(--lf-sup);
-  padding:13px 16px; font-size:13.5px; box-shadow:none;
-}
-.alert-warning{ border-left-color:var(--lf-amb); }
-.alert-danger{ border-left-color:var(--lf-rojo); }
-.alert-info{ border-left-color:var(--lf-info); }
+.lf-cards,.lf-stats{display:grid;gap:14px;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:22px}
+.stat-card,.lf-tile{padding:16px 18px}
+.stat-label{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--lf-tinta-4);font-weight:600;display:block}
+.stat-value{font-size:23px;font-weight:650;letter-spacing:-.035em;
+  display:block;margin-top:4px;line-height:1.1}
+.stat-meta{font-size:12px;color:var(--lf-tinta-3);display:block;margin-top:3px}
+.lf-signo{font-weight:600}
 
+/* Botones. Los secundarios sin relleno: seis botones grises rellenos
+   en una pantalla es lo que la hace ver de hace quince años. */
 .btn{
-  border-radius:var(--lf-r-xs); font-size:13.5px; padding:8px 15px; font-weight:500;
-  transition:transform .12s var(--crm-e), background-color var(--crm-t) var(--crm-e),
-             border-color var(--crm-t) var(--crm-e);
-}
-.btn:active{ transform:scale(.978); }
-.btn-primary{ box-shadow:none; font-weight:600; }
-.btn:not(.btn-primary):not(.btn-danger){
-  background:transparent; border:1px solid var(--lf-linea-f); color:var(--lf-tinta-2);
-}
-.btn:not(.btn-primary):not(.btn-danger):hover{
-  background:var(--lf-sup-2); border-color:var(--lf-tinta-4); color:var(--lf-tinta);
-}
-.btn-sm{ font-size:12.5px; padding:6px 12px; }
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  border-radius:var(--r-xs);font:inherit;font-size:13.5px;font-weight:500;
+  padding:8px 15px;cursor:pointer;border:1px solid transparent;
+  background:transparent;color:var(--lf-tinta-2);text-decoration:none;
+  transition:transform .12s var(--e),background-color var(--t) var(--e),
+             border-color var(--t) var(--e),color var(--t) var(--e)}
+.btn:hover{text-decoration:none}
+.btn:active{transform:scale(.978)}
+.btn:disabled,.btn[disabled]{opacity:.5;cursor:not-allowed;transform:none}
+.btn svg{width:15px;height:15px;flex:0 0 auto}
+.btn-secondary,.btn-outline,.lf-boton{border-color:var(--lf-linea-f);color:var(--lf-tinta-2)}
+.btn-secondary:hover,.btn-outline:hover,.lf-boton:hover{
+  background:var(--lf-sup-2);border-color:var(--lf-tinta-4);color:var(--lf-tinta)}
+.btn-primary{background:var(--lf-brand);color:#fff;font-weight:600;border-color:var(--lf-brand)}
+.btn-primary:hover{background:var(--lf-brand-2);border-color:var(--lf-brand-2);color:#fff}
+.btn-danger,.lf-btn-peligro{background:var(--lf-rojo);color:#fff;border-color:var(--lf-rojo)}
+.btn-danger:hover,.lf-btn-peligro:hover{filter:brightness(.92);color:#fff}
+.btn-outline-danger{border-color:var(--lf-rojo);color:var(--lf-rojo)}
+.btn-outline-danger:hover{background:var(--lf-rojo);color:#fff}
+.btn-outline-primary{border-color:var(--lf-brand);color:var(--lf-brand-2)}
+.btn-outline-primary:hover{background:var(--lf-brand);color:#fff}
+.btn-sm{font-size:12.5px;padding:6px 12px}
+.btn-lg{font-size:15px;padding:11px 20px}
+.lf-btn-ghost{border:none;color:var(--lf-tinta-3);padding:7px 10px}
+.lf-btn-ghost:hover{background:var(--lf-sup-2);color:var(--lf-tinta)}
+.w-100{width:100%}
 
-.form-control,.form-select{
-  border:1px solid var(--lf-linea); background:var(--lf-sup);
-  border-radius:var(--lf-r-xs); font-size:13.5px;
-  transition:border-color var(--crm-t) var(--crm-e), box-shadow var(--crm-t) var(--crm-e);
-}
-.form-control:focus,.form-select:focus{
-  border-color:var(--lf-brand); box-shadow:0 0 0 3px color-mix(in srgb, var(--lf-brand) 16%, transparent);
-}
-input[type="file"]{ max-width:100%; font-size:12.5px; }
-
-:where(a,button,input,select,textarea):focus-visible{
-  outline:2px solid var(--lf-brand); outline-offset:2px; border-radius:var(--lf-r-xs);
-}
+/* Campos */
+.form-label{display:block;font-size:12.5px;color:var(--lf-tinta-3);
+  margin-bottom:4px;font-weight:500}
+.form-control,.form-select,input[type=text],input[type=email],input[type=password],
+input[type=number],input[type=date],input[type=search],input[type=tel],textarea,select{
+  width:100%;font:inherit;font-size:13.5px;color:var(--lf-tinta);
+  background:var(--lf-sup);border:1px solid var(--lf-linea);
+  border-radius:var(--r-xs);padding:8px 11px;
+  transition:border-color var(--t) var(--e),box-shadow var(--t) var(--e)}
+.form-control:focus,.form-select:focus,input:focus,textarea:focus,select:focus{
+  outline:none;border-color:var(--lf-brand);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--lf-brand) 15%,transparent)}
+.form-control::placeholder,textarea::placeholder{color:var(--lf-tinta-4)}
+.form-control-sm,.form-select-sm{font-size:12.5px;padding:6px 9px}
+.form-select,select{appearance:none;padding-right:30px;
+  background-image:linear-gradient(45deg,transparent 50%,var(--lf-tinta-3) 50%),
+                   linear-gradient(135deg,var(--lf-tinta-3) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 52%,calc(100% - 10px) 52%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+input[type=file]{font-size:12.5px;max-width:100%}
+input[type=checkbox],input[type=radio]{width:auto;accent-color:var(--lf-brand)}
+.lf-form,.lf-alta,.lf-campos{display:grid;gap:13px;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.lf-campo{display:flex;flex-direction:column;gap:4px}
+.lf-check{display:flex;align-items:center;gap:8px;font-size:13.5px}
+.lf-search{display:flex;align-items:center;gap:8px;background:var(--lf-sup);
+  border:1px solid var(--lf-linea);border-radius:999px;padding:7px 14px;
+  color:var(--lf-tinta-3);transition:border-color var(--t) var(--e)}
+.lf-search:focus-within{border-color:var(--lf-brand)}
+.lf-search input{border:none;background:none;padding:0;font-size:13.5px}
+.lf-search input:focus{box-shadow:none;outline:none}
+.lf-filtros{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
 
 /* Tablas sin rejilla: las columnas ya se alinean solas. */
-.table{ border-collapse:separate; border-spacing:0; }
-.table th{
-  border:none; background:transparent;
-  font-size:11px; letter-spacing:.07em; text-transform:uppercase;
-  color:var(--lf-tinta-4); font-weight:600;
-}
-.table td{ border:none; box-shadow:inset 0 -1px 0 var(--lf-linea); }
-.table tbody tr{ transition:background-color .12s var(--crm-e); }
-.table tbody tr:hover{ background:var(--lf-sup-2); }
+.table-responsive{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.table{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px}
+.table th{text-align:left;padding:9px 12px;font-size:11px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--lf-tinta-4);font-weight:600;
+  border:none;white-space:nowrap}
+.table td{padding:11px 12px;border:none;box-shadow:inset 0 -1px 0 var(--lf-linea);
+  vertical-align:middle}
+.table tbody tr{transition:background-color .12s var(--e)}
+.table-hover tbody tr:hover,.table tbody tr:hover{background:var(--lf-sup-2)}
+.table tfoot td{font-weight:650;box-shadow:inset 0 1px 0 var(--lf-linea-f)}
+.text-end{text-align:right}
+.text-center{text-align:center}
 
-.badge{ border-radius:var(--lf-r-xs); font-weight:600; }
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;
+  font-weight:600;padding:3px 9px;border-radius:var(--r-xs);
+  background:var(--lf-sup-2);color:var(--lf-tinta-2)}
+.badge.bg-secondary,.bg-secondary{background:var(--lf-sup-2);color:var(--lf-tinta-2)}
+.badge.bg-success,.bg-success{background:color-mix(in srgb,var(--lf-brand) 14%,transparent);
+  color:var(--lf-brand-d)}
+.badge.bg-warning,.bg-warning{background:color-mix(in srgb,var(--lf-amb) 15%,transparent);
+  color:var(--lf-amb)}
+.badge.bg-danger,.bg-danger{background:color-mix(in srgb,var(--lf-rojo) 13%,transparent);
+  color:var(--lf-rojo)}
+.badge.bg-primary,.bg-primary{background:var(--lf-brand);color:#fff}
+.badge.bg-info,.bg-info{background:color-mix(in srgb,var(--lf-info) 14%,transparent);
+  color:var(--lf-info)}
+.badge.bg-dark,.bg-dark{background:var(--lf-tinta);color:var(--lf-lienzo)}
+.badge.bg-light,.bg-light{background:var(--lf-sup-2);color:var(--lf-tinta-2)}
+.lf-pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;
+  padding:4px 11px;border-radius:999px;background:var(--lf-sup-2);
+  color:var(--lf-tinta-2);text-decoration:none;border:1px solid transparent}
+.lf-pill.on{background:var(--lf-brand);color:#fff;font-weight:600}
+.lf-pills{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
 
-/* ── Precisión ──
-   Lo que hace que algo se vea caro es que todo esté a la misma rejilla,
-   con los mismos pesos. Lo que lo hace ver barato es la inconsistencia,
-   y los efectos encima no la tapan: la subrayan. */
-.table td,.stat-card,dd,.pz-val,.pz-cifras{ font-variant-numeric:tabular-nums; }
-h1,h2,h3,h4{ font-weight:650; letter-spacing:-.025em; }
-b,strong{ font-weight:600; }
-::selection{ background:color-mix(in srgb, var(--lf-brand) 24%, transparent); }
+/* Avisos: una línea de color, no un bloque relleno que ocupa media
+   pantalla para decir una frase. */
+.alert{display:flex;align-items:flex-start;gap:10px;
+  border:1px solid var(--lf-linea);border-left:3px solid var(--lf-brand);
+  border-radius:var(--r-sm);background:var(--lf-sup);
+  padding:13px 16px;font-size:13.5px;margin-bottom:16px}
+.alert svg{flex:0 0 auto;margin-top:2px}
+.alert-warning{border-left-color:var(--lf-amb)}
+.alert-danger{border-left-color:var(--lf-rojo)}
+.alert-info{border-left-color:var(--lf-info)}
+.alert-success{border-left-color:var(--lf-brand)}
 
-*{ scrollbar-width:thin; scrollbar-color:var(--lf-linea-f) transparent; }
-*::-webkit-scrollbar{ width:9px; height:9px; }
-*::-webkit-scrollbar-track{ background:transparent; }
-*::-webkit-scrollbar-thumb{
-  background:var(--lf-linea-f); border-radius:999px;
-  border:2px solid transparent; background-clip:content-box;
-}
-*::-webkit-scrollbar-thumb:hover{ background:var(--lf-tinta-4); background-clip:content-box; }
+/* Pestañas: subrayado, no pastilla rellena. */
+.nav-pills,.lf-tabs,.lf-pestanas{display:flex;gap:0;flex-wrap:wrap;
+  margin-bottom:18px;box-shadow:inset 0 -1px 0 var(--lf-linea)}
+.nav-pills .nav-link,.lf-tabs a,.lf-pestanas a{
+  padding:9px 2px;margin-right:22px;font-size:13.5px;font-weight:500;
+  color:var(--lf-tinta-3);text-decoration:none;background:none;border:none;
+  box-shadow:inset 0 -2px 0 transparent;cursor:pointer;
+  transition:color var(--t) var(--e),box-shadow var(--t) var(--e)}
+.nav-pills .nav-link:hover,.lf-tabs a:hover,.lf-pestanas a:hover{
+  color:var(--lf-tinta);box-shadow:inset 0 -2px 0 var(--lf-linea-f);text-decoration:none}
+.nav-pills .nav-link.active,.lf-tabs a.on,.lf-pestanas a.on{
+  color:var(--lf-tinta);font-weight:600;box-shadow:inset 0 -2px 0 var(--lf-brand)}
 
-/* ── Entrada ── */
-.crm-aparece{ animation:crmSube .32s var(--crm-e) both; }
-@keyframes crmSube{ from{ opacity:0; transform:translateY(7px); } to{ opacity:1; transform:none; } }
+.lf-av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;
+  font-size:12px;font-weight:650;color:#fff;background:var(--lf-info);flex:0 0 auto}
+.lf-hero{padding:22px 24px;background:var(--lf-sup);border:1px solid var(--lf-linea);
+  border-radius:var(--r);margin-bottom:22px}
+.lf-split{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:20px;
+  align-items:start}
+@media(max-width:860px){.lf-split{grid-template-columns:1fr}}
+.lf-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.lf-dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:0 0 auto}
 
-/* ── Avisos flotantes ── */
-.crm-avisos{
-  position:fixed; right:20px; bottom:20px; z-index:200;
-  display:flex; flex-direction:column; gap:9px; pointer-events:none;
-  max-width:min(380px, calc(100vw - 40px));
-}
-.crm-aviso{
-  pointer-events:auto; background:var(--lf-tinta); color:var(--lf-lienzo);
-  padding:12px 18px; border-radius:var(--lf-r-sm); font-size:13.5px; line-height:1.4;
-  box-shadow:var(--crm-e3); display:flex; align-items:center; gap:10px;
-  animation:crmAvEntra .28s var(--crm-e) both;
-}
-.crm-aviso::before{
-  content:""; width:3px; align-self:stretch; border-radius:999px;
-  background:var(--lf-brand); flex:0 0 auto; margin:-2px 2px -2px 0;
-}
-.crm-aviso.malo::before{ background:var(--lf-rojo); }
-.crm-aviso.yendose{ animation:crmAvSale .24s var(--crm-e) forwards; }
-@keyframes crmAvEntra{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
-@keyframes crmAvSale{ to{ opacity:0; transform:translateX(16px); } }
+dialog{border:none;border-radius:var(--r-lg);padding:24px;
+  background:var(--lf-sup);color:var(--lf-tinta);max-width:min(640px,94vw);
+  box-shadow:0 16px 48px #19181426}
+dialog::backdrop{background:#1918145e;backdrop-filter:blur(2px)}
+
+.lf-paginacion{display:flex;gap:6px;justify-content:center;margin-top:22px;flex-wrap:wrap}
+.lf-paginacion a,.lf-paginacion span{padding:6px 11px;border-radius:var(--r-xs);
+  font-size:13px;color:var(--lf-tinta-2);text-decoration:none;
+  border:1px solid var(--lf-linea)}
+.lf-paginacion a:hover{background:var(--lf-sup-2);text-decoration:none}
+.lf-paginacion .on{background:var(--lf-brand);color:#fff;border-color:var(--lf-brand);font-weight:600}
+
+[data-lf-vacio],.lf-det-vacio{text-align:center;color:var(--lf-tinta-4);
+  font-size:13.5px;padding:34px 18px}
+
+/* ── 4 · MOVIMIENTO ───────────────────────────── */
+.crm-aparece{animation:crmSube .32s var(--e) both}
+@keyframes crmSube{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+.crm-avisos{position:fixed;right:20px;bottom:20px;z-index:200;display:flex;
+  flex-direction:column;gap:9px;pointer-events:none;
+  max-width:min(380px,calc(100vw - 40px))}
+.crm-aviso{pointer-events:auto;background:var(--lf-tinta);color:var(--lf-lienzo);
+  padding:12px 18px;border-radius:var(--r-sm);font-size:13.5px;line-height:1.4;
+  box-shadow:0 16px 48px #19181433;display:flex;align-items:center;gap:10px;
+  animation:crmAvEntra .28s var(--e) both}
+.crm-aviso::before{content:"";width:3px;align-self:stretch;border-radius:999px;
+  background:var(--lf-brand);flex:0 0 auto;margin:-2px 2px -2px 0}
+.crm-aviso.malo::before{background:var(--lf-rojo)}
+.crm-aviso.yendose{animation:crmAvSale .24s var(--e) forwards}
+@keyframes crmAvEntra{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes crmAvSale{to{opacity:0;transform:translateX(16px)}}
+
+/* ════════════════════════════════════════════════════════
+   5 · RED DE SEGURIDAD
+   ════════════════════════════════════════════════════════
+   Al quitar libertyfin.css, 395 clases propias de pantallas concretas
+   —la agenda, el chat, la cotización, el expediente— se quedaron sin
+   estilo. Se rehacen una a una, pero mientras tanto estas reglas evitan
+   lo peor: que una pantalla se vea ROTA en vez de simplemente sobria.
+
+   Son suposiciones por el nombre, no diseño. Cuando una pantalla se
+   rehaga de verdad, sus reglas van arriba y pisan a estas.
+
+   La diferencia importa: una pantalla sobria se puede usar; una rota,
+   no, y es la que hace que alguien deje de confiar en el sistema. */
+
+/* Cualquier cosa que termine en -grid, -cols, -rejilla o -tarjetas
+   quiere ser una rejilla. */
+[class*="-grid"],[class*="-cols"],[class*="-rejilla"],[class*="-tarjetas"]{
+  display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+
+/* Lo que termina en -fila, -row, -acc, -acciones o -barra, una fila. */
+[class*="-fila"],[class*="-acciones"],[class*="-barra"],[class*="-acc"]{
+  display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+
+/* Las tarjetas y paneles sueltos: superficie, contorno, aire. */
+[class*="-card"],[class*="-panel"],[class*="-caja"],[class*="-ficha"],
+[class*="-bloque"],[class*="-item"]{
+  border-radius:var(--r-sm)}
+[class*="-card"],[class*="-ficha"]{
+  background:var(--lf-sup);border:1px solid var(--lf-linea);padding:14px 16px}
+
+/* Listas propias: sin viñetas ni sangría heredada. */
+[class*="-lista"],[class*="-notas"],[class*="-items"]{list-style:none;padding-left:0}
+
+/* Texto secundario reconocible por el nombre. */
+[class*="-sub"],[class*="-meta"],[class*="-pista"],[class*="-desc"]{
+  color:var(--lf-tinta-3);font-size:12.5px}
+
+/* Nada se sale de la pantalla: un desbordamiento horizontal es lo que
+   más se percibe como «esto está roto». */
+.lf-main{overflow-x:hidden}
+.lf-main table{max-width:100%}
