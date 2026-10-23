@@ -1,521 +1,204 @@
 /* ════════════════════════════════════════════════════════
-   LIBERTYFIN CRM · carácter propio
+   LIBERTYFIN CRM · identidad
    ════════════════════════════════════════════════════════
+   Va DESPUÉS de libertyfin.css y redefine variables y chasis. El verde
+   de la casa no se toca: los dos productos son LibertyFin.
 
-   Va DESPUÉS de libertyfin.css. El verde de la casa NO se toca: es el
-   color de LibertyFin y los dos productos son LibertyFin.
+   LAS CUATRO REGLAS
 
-   ENTONCES, ¿QUÉ LO HACE DISTINTO?
-
-   El movimiento y el aire. Dos productos pueden compartir paleta y no
-   parecerse en nada si uno se siente pesado y el otro ligero. El POS es
-   una herramienta de mostrador: se usa de pie, con prisa, y lo que
-   importa es que el botón esté donde siempre. El CRM se usa sentado,
-   mirando, arrastrando: ahí la sensación de respuesta ES la interfaz.
-
-   Tres decisiones de fondo:
-
-   1. MENOS LÍNEAS. La jerarquía la dan el espacio y la elevación, no
-      los bordes. Un tablero con borde en cada tarjeta, cada columna y
-      cada panel se lee como una hoja de cálculo.
-
-   2. TODO RESPONDE AL INSTANTE. Nada cambia de golpe y nada tarda más
-      de 240 ms. El ojo lee un cambio instantáneo como un error de
-      pintado; por encima de 300 ms lo lee como lentitud.
-
-   3. SE MUEVE LO BARATO. Solo `transform` y `opacity`, que el navegador
-      resuelve sin recalcular la página. Animar `width`, `top` o
-      `height` obliga a recomponerlo todo en cada cuadro, y eso es
-      exactamente lo que se siente como tirones.
+   1. BLANCOS CÁLIDOS. Un #ffffff plano sobre #f8fafc es el fondo de
+      cualquier plantilla. Un hueso con una pizca de amarillo se
+      reconoce y cansa menos a las seis de la tarde.
+   2. SIN DEGRADADOS. Fingen un volumen que no existe, y con tres
+      juntos la pantalla se recarga. Color plano y una línea.
+   3. ELEVACIÓN POR CONTORNO. Un borde de un píxel, no una nube
+      difusa. Las sombras grandes son lo que delata una plantilla.
+   4. NADA PASA DE 240 ms Y SOLO SE MUEVEN transform Y opacity.
+      Animar width o height recompone la página en cada cuadro, y eso
+      es lo que se siente como tirones.
    ════════════════════════════════════════════════════════ */
 
 :root{
-  /* Las curvas. Una interfaz se siente de un modo u otro casi solo por
-     esto: arranca rápido y frena despacio, como las cosas reales. */
-  --crm-ease:cubic-bezier(.22,1,.36,1);        /* salida suave, la de diario */
-  --crm-ease-s:cubic-bezier(.34,1.56,.64,1);   /* con rebote, para lo que aparece */
-  --crm-t:.2s;
-  --crm-t-l:.34s;
+  /* Neutros cálidos */
+  --lf-lienzo:#faf9f6;
+  --lf-sup:#ffffff;
+  --lf-sup-2:#f4f3ef;
+  --lf-panel:#ffffff;
+  --lf-vidrio:#efeee9;
+  --lf-tinta:#191814;
+  --lf-tinta-2:#5b574e;
+  --lf-tinta-3:#8d887d;
+  --lf-tinta-4:#b0aba0;
+  --lf-linea:#e8e6e0;
+  --lf-linea-f:#d8d5cc;
 
-  /* Elevación en vez de contorno. Sombras muy abiertas y muy tenues:
-     se notan sin que se vean. */
-  /* Contorno de un píxel + una sombra mínima. Una sombra grande y
-     difusa es lo que hace que una interfaz parezca una plantilla
-     comprada: imita profundidad sin que nada esté realmente encima de
-     nada. El contorno define; la sombra solo despega. */
+  /* Semánticos propios: en el POS el verde ES la marca y también el
+     «bien». Aquí se separan para que el ámbar y el rojo tengan el mismo
+     peso visual y no desentonen con el papel cálido. */
+  --lf-amb:#b8791c;
+  --lf-rojo:#bc4237;
+  --lf-info:#4a7fb5;
+  --crm-morado:#6b6bc4;
+  --crm-gris:#b4b0a6;
+
+  --crm-e:cubic-bezier(.22,1,.36,1);
+  --crm-t:.16s;
   --crm-e1:0 0 0 1px var(--lf-linea);
-  --crm-e2:0 0 0 1px var(--lf-linea-f), 0 2px 8px rgba(16,32,24,.06);
-  --crm-e3:0 0 0 1px var(--lf-linea-f), 0 16px 48px rgba(16,32,24,.14);
+  --crm-e2:0 2px 12px #1918140f;
+  --crm-e3:0 16px 48px #19181426;
 
-  /* Más redondo y más aire que el POS. */
-  --lf-r-xs:9px; --lf-r-sm:12px; --lf-r:16px; --lf-r-lg:22px; --lf-r-panel:28px;
+  --lf-r-xs:8px; --lf-r-sm:11px; --lf-r:14px; --lf-r-lg:18px; --lf-r-panel:22px;
+  --lf-side-w:214px;
+  --lf-head-h:auto;
 }
 
-/* Quien pidió menos movimiento, menos movimiento. No es un extra: para
-   algunas personas una animación mal puesta marea de verdad. */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --lf-lienzo:#14150f; --lf-sup:#1b1d16; --lf-sup-2:#22241c; --lf-panel:#1b1d16;
+    --lf-vidrio:#282b21;
+    --lf-tinta:#edece6; --lf-tinta-2:#b2afa4; --lf-tinta-3:#857f73; --lf-tinta-4:#67625a;
+    --lf-linea:#2b2e24; --lf-linea-f:#3a3e31;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --lf-lienzo:#14150f; --lf-sup:#1b1d16; --lf-sup-2:#22241c; --lf-panel:#1b1d16;
+  --lf-vidrio:#282b21;
+  --lf-tinta:#edece6; --lf-tinta-2:#b2afa4; --lf-tinta-3:#857f73; --lf-tinta-4:#67625a;
+  --lf-linea:#2b2e24; --lf-linea-f:#3a3e31;
+}
+
 @media (prefers-reduced-motion: reduce){
-  :root{ --crm-t:.01ms; --crm-t-l:.01ms; }
+  :root{ --crm-t:.01ms; }
   *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; }
 }
 
-/* ────────────────────────────────────────────────────────
-   EL MENÚ: un indicador que se desliza
-   ────────────────────────────────────────────────────────
-   La barra a la izquierda de la entrada activa es lo que hace todo el
-   mundo. Aquí la pastilla viaja: al cambiar de sección se desplaza
-   desde donde estaba, y esa continuidad cuenta de dónde vienes.
-
-   El truco es un pseudo-elemento sobre la entrada activa que parte
-   escalado en el eje Y y se abre. Cuesta nada y no toca el layout. */
-.lf-nav{ position:relative; }
-.lf-nav a{
-  position:relative; border-radius:var(--lf-r-sm);
-  transition:color var(--crm-t) var(--crm-ease),
-             transform var(--crm-t) var(--crm-ease);
-  z-index:1;
-}
-.lf-nav a::before{
-  content:""; position:absolute; inset:0; z-index:-1;
-  border-radius:inherit;
-  background:color-mix(in srgb, var(--lf-brand) 13%, transparent);
-  opacity:0; transform:scaleY(.4);
-  transition:opacity var(--crm-t) var(--crm-ease),
-             transform var(--crm-t-l) var(--crm-ease-s);
-}
-.lf-nav a:hover::before{ opacity:.55; transform:scaleY(1); }
-.lf-nav a.on::before{ opacity:1; transform:scaleY(1); }
-.lf-nav a.on{ color:var(--lf-brand-2); font-weight:600; }
-
-/* El punto. Pequeño, a la derecha, y aparece con rebote: es el único
-   adorno del menú y por eso puede permitirse llamar la atención. */
-.lf-nav a.on::after{
-  content:""; position:absolute; right:10px; top:50%;
-  width:5px; height:5px; border-radius:50%;
-  background:var(--lf-brand);
-  transform:translateY(-50%) scale(0);
-  animation:crmPunto var(--crm-t-l) var(--crm-ease-s) forwards;
-}
-@keyframes crmPunto{ to{ transform:translateY(-50%) scale(1); } }
-
-
-/* El menú sin borde derecho: lo separa el color del lienzo, no una
-   línea. Una línea más es una línea que el ojo tiene que saltar. */
-.lf-side{ border-right:none; }
-
-/* ────────────────────────────────────────────────────────
-   TARJETAS Y PANELES: elevación, no contorno
-   ──────────────────────────────────────────────────────── */
-.card, .stat-card{
-  border:none; box-shadow:var(--crm-e1);
-  transition:box-shadow var(--crm-t) var(--crm-ease),
-             transform var(--crm-t) var(--crm-ease);
-}
-.card:hover{ box-shadow:var(--crm-e2); }
-
-/* ────────────────────────────────────────────────────────
-   BOTONES: responden al dedo
-   ────────────────────────────────────────────────────────
-   Levantarse al pasar y HUNDIRSE al pulsar. Lo segundo importa más: sin
-   estado activo, un botón en el móvil no da señal de haberse pulsado y
-   la gente pulsa dos veces. */
-.btn{
-  transition:transform .14s var(--crm-ease),
-             box-shadow var(--crm-t) var(--crm-ease),
-             background-color var(--crm-t) var(--crm-ease);
-  will-change:transform;
-}
-.btn:hover{ transform:translateY(-1px); }
-.btn:active{ transform:translateY(0) scale(.975); transition-duration:.06s; }
-.btn-primary{ box-shadow:0 2px 10px color-mix(in srgb, var(--lf-brand) 30%, transparent); }
-.btn-primary:hover{ box-shadow:0 6px 18px color-mix(in srgb, var(--lf-brand) 36%, transparent); }
-
-/* El foco de teclado, visible de verdad. Quien navega con tabulador
-   necesita ver dónde está tanto como quien usa el ratón. */
-:where(a,button,input,select,textarea):focus-visible{
-  outline:2px solid var(--lf-brand);
-  outline-offset:2px;
-  border-radius:var(--lf-r-xs);
-}
-
-/* ────────────────────────────────────────────────────────
-   CAMPOS: la línea se pinta sola
-   ──────────────────────────────────────────────────────── */
-.form-control, .form-select{
-  border-color:transparent;
-  background:var(--lf-sup-2);
-  transition:background-color var(--crm-t) var(--crm-ease),
-             box-shadow var(--crm-t) var(--crm-ease);
-}
-.form-control:hover, .form-select:hover{ background:var(--lf-vidrio); }
-.form-control:focus, .form-select:focus{
-  background:var(--lf-sup);
-  box-shadow:0 0 0 2px var(--lf-brand), var(--crm-e1);
-  border-color:transparent;
-}
-
-/* ────────────────────────────────────────────────────────
-   LA PÁGINA ENTRA
-   ────────────────────────────────────────────────────────
-   Un desplazamiento mínimo y un fundido. Más que esto en cada carga
-   acaba cansando: se nota la primera vez y estorba la número cien. */
-.lf-main > *{ animation:crmEntra var(--crm-t-l) var(--crm-ease) both; }
-@keyframes crmEntra{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
-
-/* ────────────────────────────────────────────────────────
-   TABLAS: sin rejilla
-   ────────────────────────────────────────────────────────
-   Las columnas ya se alinean solas. Pintarles una línea a cada lado es
-   decir dos veces lo mismo. */
-.table{ border-collapse:separate; border-spacing:0; }
-.table th{
-  border:none; background:transparent;
-  font-size:11.5px; letter-spacing:.055em; text-transform:uppercase;
-  color:var(--lf-tinta-4); font-weight:600;
-}
-.table td{ border:none; box-shadow:inset 0 -1px 0 var(--lf-linea); }
-.table tbody tr{ transition:background-color .14s var(--crm-ease); }
-.table tbody tr:hover{ background:color-mix(in srgb, var(--lf-brand) 4%, transparent); }
-
-/* ────────────────────────────────────────────────────────
-   LA BARRA DE DESPLAZAMIENTO
-   ────────────────────────────────────────────────────────
-   El tablero rueda en horizontal, así que esta se ve todo el rato. */
-*{ scrollbar-width:thin; scrollbar-color:var(--lf-linea-f) transparent; }
-*::-webkit-scrollbar{ width:9px; height:9px; }
-*::-webkit-scrollbar-track{ background:transparent; }
-*::-webkit-scrollbar-thumb{
-  background:var(--lf-linea-f); border-radius:999px;
-  border:2px solid transparent; background-clip:content-box;
-  transition:background-color var(--crm-t) var(--crm-ease);
-}
-*::-webkit-scrollbar-thumb:hover{
-  background:var(--lf-tinta-4); background-clip:content-box;
-}
-
 /* ════════════════════════════════════════════════════════
-   EL CHASIS: otro producto, no otro color
-   ════════════════════════════════════════════════════════
-
-   Hasta aquí solo se habían cambiado tonos y movimiento, y el esqueleto
-   seguía siendo el del POS: menú ancho y claro, panel redondeado
-   flotando sobre el lienzo, título grande arriba. Con eso, dos capturas
-   puestas lado a lado se confunden.
-
-   Tres cambios de estructura, no de estilo:
-
-   1. EL MENÚ ES UNA COLUMNA OSCURA Y ESTRECHA que se abre al acercar el
-      ratón, por encima del contenido y sin empujarlo. En el POS el menú
-      es parte de la página; aquí es una herramienta que aparece y se
-      quita. El contraste oscuro-claro es además lo que más distingue
-      dos interfaces de un vistazo, más que cualquier tono de verde.
-
-   2. EL CONTENIDO LLENA LA PANTALLA. Nada de panel redondeado con
-      márgenes: el tablero llega hasta el borde y rueda por su cuenta.
-      Un embudo de siete columnas no se mira dentro de una tarjeta.
-
-   3. EL TÍTULO SE ENCOGE a una barra fina. En el POS el encabezado
-      ocupa tres líneas; aquí es una franja donde caben el nombre, la
-      búsqueda y los botones, y lo demás es trabajo.
+   CHASIS
    ════════════════════════════════════════════════════════ */
-
-:root{
-  --crm-rail:66px;        /* la columna en reposo */
-  --crm-rail-abierto:236px;
-  --crm-oscuro:#121a16;   /* el verde de la casa, casi negro */
-  --crm-oscuro-2:#1a2520;
-  --lf-side-w:var(--crm-rail);
-  --lf-head-h:54px;
-}
-
-/* ── La columna ──
-   NO se expande al pasar el ratón. Lo intenté y estaba mal: al abrirse
-   a 236px pasaba por encima de un contenido que empieza en 66px, y los
-   títulos salían cortados. Un menú que tapa lo que estás leyendo no es
-   un menú que se abre: es un fallo.
-
-   Queda como barra fija de iconos. Para ver los nombres está el botón
-   de abajo, que la CLAVA abierta y empuja el contenido: las dos cosas
-   leen la misma variable, así que nunca se solapan. */
 .lf-side{
   position:fixed; top:0; left:0; bottom:0; z-index:50;
   width:var(--lf-side-w);
-  background:var(--crm-oscuro);
-  border:none; border-radius:0;
-  padding:0; overflow:hidden;
-  transition:width .24s var(--crm-ease);
+  background:var(--lf-lienzo);
+  border:none; border-right:1px solid var(--lf-linea); border-radius:0;
+  padding:20px 12px; overflow-y:auto; overflow-x:visible;
+  display:flex; flex-direction:column; gap:2px;
+  transition:width .24s var(--crm-e);
 }
-
-/* El contenido empieza justo donde acaba el menú. Siempre. */
 .lf-main{
   margin-left:var(--lf-side-w);
   background:var(--lf-lienzo);
-  border-radius:0;
-  min-height:100vh; min-height:100dvh;
+  border-radius:0; min-height:100vh; min-height:100dvh;
   display:flex; flex-direction:column;
-  transition:margin-left .24s var(--crm-ease);
+  transition:margin-left .24s var(--crm-e);
 }
 
-/* Clavado abierto. `angosta` pasó a significar lo contrario de antes,
-   así que se renombra: el botón pone `html.menu-ancho`. */
-html.menu-ancho{ --lf-side-w:var(--crm-rail-abierto); }
-
-/* ── Los textos ──
-   Se esconden de verdad cuando la barra está estrecha: dejarlos con
-   `opacity:0` hacía que al pasar el ratón sobre un hueco vacío se
-   seleccionara texto invisible. */
-.lf-side .lf-nav a > span,
-.lf-side .sec,
-.lf-side .lf-marca > span:not(.g),
-.lf-side .lf-ucard b,
-.lf-side .lf-ucard small,
-.lf-side .lf-ang-txt{ display:none; }
-
-html.menu-ancho .lf-side .lf-nav a > span,
-html.menu-ancho .lf-side .sec,
-html.menu-ancho .lf-side .lf-marca > span:not(.g),
-html.menu-ancho .lf-side .lf-ucard b,
-html.menu-ancho .lf-side .lf-ucard small,
-html.menu-ancho .lf-side .lf-ang-txt{
-  display:block; white-space:nowrap;
-  animation:crmTexto .22s var(--crm-ease) both;
+/* El menú reducido: 62px. Cada icono enseña su nombre al pasar, porque
+   reducir tiene que ser ganar sitio, no esconder el sistema. */
+html.menu-chico{ --lf-side-w:62px; }
+html.menu-chico .lf-side{ padding:20px 9px; overflow-x:visible; }
+html.menu-chico .lf-nav a > span,
+html.menu-chico .lf-nav a b,
+html.menu-chico .sec,
+html.menu-chico .lf-marca > span:not(.g),
+html.menu-chico .lf-ucard b,
+html.menu-chico .lf-ucard small,
+html.menu-chico .lf-ang-txt{ display:none; }
+html.menu-chico .lf-nav a{ justify-content:center; padding:9px 0; }
+html.menu-chico .lf-marca{ justify-content:center; padding:0 0 18px; }
+html.menu-chico .lf-ucard{ justify-content:center; }
+/* Los títulos de grupo no caben, pero el aire que separaban sí hace
+   falta: pasan a una raya. */
+html.menu-chico .sec{
+  display:block; height:1px; padding:0; margin:11px 8px; font-size:0;
+  background:var(--lf-linea); overflow:hidden;
 }
-@keyframes crmTexto{ from{opacity:0;transform:translateX(-4px)} to{opacity:1;transform:none} }
-
-/* Estrecha: todo centrado y el nombre flotante al pasar. */
-.lf-side .lf-nav a{ justify-content:center; padding-left:0; padding-right:0; margin:2px 9px; }
-html.menu-ancho .lf-side .lf-nav a{ justify-content:flex-start; padding-left:16px; }
-
-.lf-side .lf-nav a::after{ content:none; }
-/* El nombre al pasar el ratón, estando estrecha. Sin esto hay que
-   aprenderse quince iconos, y eso es trabajo del usuario que no tendría
-   que existir. Se dibuja con un segundo pseudo-elemento para no pelearse
-   con el fondo de la pastilla activa. */
-html:not(.menu-ancho) .lf-side .lf-nav a::after{
+html.menu-chico .lf-nav a::after{
   content:attr(title);
-  position:absolute; left:calc(100% + 12px); top:50%;
+  position:absolute; left:calc(100% + 10px); top:50%;
   transform:translateY(-50%) translateX(-4px);
-  background:var(--crm-oscuro-2); color:#e9efec;
+  background:var(--lf-tinta); color:var(--lf-lienzo);
   padding:6px 11px; border-radius:8px; font-size:12.5px; font-weight:500;
   white-space:nowrap; pointer-events:none; z-index:60;
-  box-shadow:0 4px 16px rgba(0,0,0,.3);
-  opacity:0; transition:opacity .14s var(--crm-ease), transform .18s var(--crm-ease);
+  box-shadow:0 6px 20px #19181426;
+  opacity:0; transition:opacity var(--crm-t) var(--crm-e), transform .18s var(--crm-e);
 }
-html:not(.menu-ancho) .lf-side .lf-nav a:hover::after,
-html:not(.menu-ancho) .lf-side .lf-nav a:focus-visible::after{
-  opacity:1; transform:translateY(-50%);
+html.menu-chico .lf-nav a:hover::after,
+html.menu-chico .lf-nav a:focus-visible::after{ opacity:1; transform:translateY(-50%); }
+
+/* ── Menú ── */
+.lf-marca{ display:flex; align-items:center; gap:10px; padding:0 10px 22px;
+  font-weight:650; letter-spacing:-.03em; font-size:16px; }
+.lf-marca .g{
+  width:28px; height:28px; border-radius:8px; background:var(--lf-brand);
+  color:#fff; display:grid; place-items:center; font-size:13px; font-weight:700;
 }
-/* La barra de la sección activa se dibuja aparte, porque ::after ya está
-   ocupado por el nombre flotante. */
-.lf-side .lf-nav a.on{ box-shadow:inset 3px 0 0 var(--lf-brand); }
-html:not(.menu-ancho) .lf-side{ overflow:visible; }
-
-/* ── Sobre oscuro, los colores cambian ── */
-.lf-side .lf-nav a{
-  color:#9fb0a8; padding:11px 0 11px 22px; margin:1px 10px; gap:14px;
-  justify-content:flex-start; overflow:hidden;
+.lf-marca b{ font-weight:650; }
+.lf-nav{ display:flex; flex-direction:column; gap:2px; }
+.lf-nav a{
+  position:relative;
+  display:flex; align-items:center; gap:11px; padding:8px 10px; border-radius:9px;
+  color:var(--lf-tinta-2); text-decoration:none; font-size:14px; font-weight:500;
+  transition:background var(--crm-t) var(--crm-e), color var(--crm-t) var(--crm-e);
 }
-.lf-side .lf-nav a svg{ flex:0 0 auto; margin-left:-1px; transition:transform .2s var(--crm-ease-s); }
-.lf-side .lf-nav a:hover{ color:#fff; }
-.lf-side .lf-nav a:hover svg{ transform:scale(1.14); }
-.lf-side .lf-nav a::before{ background:rgba(255,255,255,.07); }
-.lf-side .lf-nav a.on{ color:#fff; }
-.lf-side .lf-nav a.on::before{ background:color-mix(in srgb, var(--lf-brand) 26%, transparent); }
-/* La marca de la sección activa: una barra corta y redonda pegada al
-   canto izquierdo. No cruza la entrada entera, solo la señala. */
-.lf-side .lf-nav a.on::after{
-  content:""; right:auto; left:0; top:50%;
-  width:3px; height:17px; border-radius:0 3px 3px 0;
-  background:var(--lf-brand);
-  transform:translateY(-50%) scaleY(0);
-  transform-origin:center;
-  animation:crmMarca .3s var(--crm-ease-s) forwards;
+.lf-nav a svg{ width:17px; height:17px; flex:0 0 auto; opacity:.78; }
+.lf-nav a:hover{ background:var(--lf-sup-2); color:var(--lf-tinta); }
+.lf-nav a.on{ background:var(--lf-brand); color:#fff; font-weight:600; }
+.lf-nav a.on svg{ opacity:1; }
+.sec{
+  font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--lf-tinta-4); font-weight:600; padding:16px 10px 6px;
 }
-@keyframes crmMarca{ to{ transform:translateY(-50%) scaleY(1); } }
-
-
-.lf-side .sec{ color:#5e716a; font-size:10.5px; letter-spacing:.08em; padding-left:24px; }
-.lf-side .lf-marca{ padding:16px 0 14px 20px; }
-.lf-side .lf-marca .g{
-  background:linear-gradient(135deg, var(--lf-brand), var(--lf-brand-d));
-  color:#fff; box-shadow:0 4px 14px color-mix(in srgb, var(--lf-brand) 40%, transparent);
+.lf-ucard{ border-top:1px solid var(--lf-linea); padding-top:12px; }
+.lf-angosta{
+  display:flex; align-items:center; gap:9px; width:100%; background:none; border:none;
+  cursor:pointer; color:var(--lf-tinta-4); font:inherit; font-size:12.5px;
+  padding:9px 10px; border-radius:8px; border-top:none;
+  transition:background var(--crm-t) var(--crm-e), color var(--crm-t) var(--crm-e);
 }
-.lf-side .lf-marca b{ color:#fff; }
-.lf-side .lf-marca small{ color:#7d8f88; }
-.lf-side .lf-ucard{ border-color:rgba(255,255,255,.08); padding-left:20px; }
-.lf-side .lf-ucard b{ color:#e6ede9; }
-.lf-side .lf-ucard small{ color:#7d8f88; }
-.lf-side .lf-angosta{ color:#7d8f88; border-top-color:rgba(255,255,255,.08); padding-left:24px; }
-.lf-side .lf-angosta:hover{ color:#fff; }
+.lf-angosta:hover{ background:var(--lf-sup-2); color:var(--lf-tinta-2); }
+.lf-ang-ico{ font-size:16px; line-height:1; transition:transform .22s var(--crm-e); }
+html.menu-chico .lf-ang-ico{ transform:rotate(180deg); }
+html.menu-chico .lf-angosta{ justify-content:center; padding:9px 0; }
 
-
-
-/* ── La barra de arriba: una franja, no un encabezado ── */
+/* ── Barra de arriba ── */
 .lf-top{
   position:sticky; top:0; z-index:30;
-  min-height:var(--lf-head-h); padding:0 26px;
-  background:color-mix(in srgb, var(--lf-lienzo) 86%, transparent);
-  backdrop-filter:blur(14px) saturate(1.4);
-  box-shadow:inset 0 -1px 0 var(--lf-linea);
-  flex-wrap:nowrap;
+  padding:24px 32px 16px; gap:18px; flex-wrap:wrap;
+  background:var(--lf-lienzo); box-shadow:none; min-height:0;
+  align-items:flex-end;
 }
+.lf-top-tit{ flex:1; min-width:0; }
 .lf-top-tit h1{
-  font-size:15px; font-weight:650; letter-spacing:-.015em; gap:9px; margin:0;
+  font-size:26px; font-weight:650; letter-spacing:-.035em; line-height:1.12;
+  gap:10px; margin:0;
 }
-/* El subtítulo pasa a la misma línea, en gris: ocupaba un renglón para
-   decir algo que se lee de paso. */
-.lf-top-tit{ display:flex; align-items:baseline; gap:12px; }
-.lf-top-tit p{ margin:0; font-size:12.5px; color:var(--lf-tinta-4); white-space:nowrap;
-  overflow:hidden; text-overflow:ellipsis; }
-@media(max-width:720px){ .lf-top-tit p{ display:none; } }
-
-/* El cuerpo ocupa lo que queda y rueda por su cuenta. */
-.lf-main > :not(.lf-top){ padding-left:26px; padding-right:26px; }
-.lf-main > .lf-cont, .lf-main > main{ flex:1; }
-
-@media(max-width:860px){
-  .lf-side{ position:fixed; width:var(--crm-rail-abierto); transform:translateX(-100%);
-    transition:transform .26s var(--crm-ease); }
-  .lf-side.abierto{ transform:none; }
-  .lf-main{ margin-left:0; }
-  .lf-top{ padding:0 14px; }
-  .lf-main > :not(.lf-top){ padding-left:14px; padding-right:14px; }
+.lf-top-tit h1 svg{ display:none; }
+.lf-top-tit p{ margin:4px 0 0; font-size:14px; color:var(--lf-tinta-3); }
+.lf-main > :not(.lf-top){ padding-left:32px; padding-right:32px; }
+@media(max-width:720px){
+  .lf-top{ padding:20px 16px 12px; }
+  .lf-main > :not(.lf-top){ padding-left:16px; padding-right:16px; }
 }
 
 /* ════════════════════════════════════════════════════════
-   LA CAPA DE MOVIMIENTO (va con crm-movimiento.js)
+   CONTENIDO
    ════════════════════════════════════════════════════════ */
-
-/* ── Lo que aparece al bajar ──
-   SIEMPRE TERMINA VISIBLE, pase lo que pase con el JS.
-   Antes el estado de partida era `opacity:0` y solo el observador lo
-   quitaba: si el elemento era más alto que la pantalla, el umbral nunca
-   se cumplía y la sección se quedaba invisible para siempre. Ahora la
-   animación va sola en CSS y el JS solo escalona; si el JS no corre, se
-   ve igual. */
-.crm-aparece{
-  animation:crmSube .34s var(--crm-ease) both;
-}
-@keyframes crmSube{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
-
-/* ── Los avisos flotantes ── */
-.crm-avisos{
-  position:fixed; right:20px; bottom:20px; z-index:200;
-  display:flex; flex-direction:column; gap:9px; pointer-events:none;
-  max-width:min(380px, calc(100vw - 40px));
-}
-.crm-aviso{
-  pointer-events:auto;
-  background:var(--crm-oscuro); color:#e9efec;
-  padding:12px 18px; border-radius:var(--lf-r-sm);
-  font-size:13.5px; line-height:1.4; box-shadow:var(--crm-e3);
-  animation:crmAvisoEntra .3s var(--crm-ease-s) both;
-  display:flex; align-items:center; gap:10px;
-}
-/* La barra de color a la izquierda es lo único que distingue bien y mal:
-   el texto ya lo dice, el color lo dice antes de leerlo. */
-.crm-aviso::before{
-  content:""; width:3px; align-self:stretch; border-radius:999px;
-  background:var(--lf-brand); flex:0 0 auto; margin:-2px 2px -2px 0;
-}
-.crm-aviso.malo::before{ background:var(--lf-rojo); }
-.crm-aviso.yendose{ animation:crmAvisoSale .26s var(--crm-ease) forwards; }
-@keyframes crmAvisoEntra{ from{ opacity:0; transform:translateY(14px) scale(.96); }
-                          to{ opacity:1; transform:none; } }
-@keyframes crmAvisoSale{ to{ opacity:0; transform:translateX(18px); } }
-
-/* ── Por qué NO hay fundido al cambiar de página ──
-   Lo intenté y lo quité: ponía `opacity:0` al cuerpo antes de navegar, y
-   cualquier clic que no acabara en una carga nueva —una descarga, un
-   enlace a una ruta que redirige, volver con el botón de atrás— dejaba
-   la pantalla en blanco sin forma de recuperarla.
-   El parpadeo entre páginas molesta; una pantalla en blanco es un fallo.
-   No se cambia lo segundo por lo primero. */
-
-/* ── El esqueleto mientras carga ──
-   Para cuando el panel lateral trae la ficha. Un hueco gris que respira
-   dice «viene en camino»; uno quieto dice «se rompió». */
-.crm-hueso{
-  background:linear-gradient(90deg,
-    var(--lf-vidrio) 25%, var(--lf-sup-2) 37%, var(--lf-vidrio) 63%);
-  background-size:400% 100%;
-  animation:crmHueso 1.3s ease-in-out infinite;
-  border-radius:var(--lf-r-xs); color:transparent !important;
-}
-@keyframes crmHueso{ from{ background-position:100% 0; } to{ background-position:0 0; } }
-
-@media (prefers-reduced-motion: reduce){
-  .crm-aparece{ opacity:1; transform:none; }
-  .crm-hueso{ animation:none; }
-}
-
-/* ════════════════════════════════════════════════════════
-   PRECISIÓN
-   ════════════════════════════════════════════════════════
-   Lo que hace que una interfaz se vea cara no son los efectos: es que
-   todo esté alineado a la misma rejilla, con los mismos pesos y los
-   mismos espacios. Lo que la hace ver barata es la inconsistencia, y
-   los efectos encima no la tapan: la subrayan. */
-
-/* Números de ancho fijo en TODO lo que es cifra. Sin esto, una columna
-   de importes baila al cambiar de 1 a 7, y ese temblor es lo primero
-   que delata una tabla mal hecha. */
-.table td, .stat-card, .pz-cifras, .pz-val, dd{ font-variant-numeric:tabular-nums; }
-
-/* Dos pesos y punto: normal y 600. Tener 500, 600 y 650 sueltos por ahí
-   es lo que hace que nada parezca decidido. */
-h1,h2,h3,h4,.pz-tit,.card h3,.lf-top-tit h1{ font-weight:600; letter-spacing:-.02em; }
-b,strong{ font-weight:600; }
-
-/* El texto pequeño, con más espacio entre letras. Por debajo de 12px,
-   el seguimiento normal se apelmaza. */
-small,.pz-asunto,.pz-resp,.pz-notas small{ letter-spacing:.005em; }
-
-/* Los títulos de tabla y de bloque, en el mismo estilo en todo el
-   sistema: una sola convención, repetida. */
-.table th,.pz-bloque h4,.lf-side .sec{
-  font-size:11px; letter-spacing:.07em; text-transform:uppercase;
-  font-weight:600; color:var(--lf-tinta-4);
-}
-
-/* Las esquinas, en una escala y no al gusto de cada pantalla. */
-.badge{ border-radius:var(--lf-r-xs); font-weight:600; letter-spacing:.01em; }
-
-/* La selección, en la marca. Es un detalle de dos líneas que casi nadie
-   pone, y se nota cuando está. */
-::selection{ background:color-mix(in srgb, var(--lf-brand) 26%, transparent); }
-
-/* ════════════════════════════════════════════════════════
-   EL CONTENIDO
-   ════════════════════════════════════════════════════════
-   El chasis ya es otro, pero dentro seguían las mismas tarjetas blancas
-   muy redondeadas con sombra difusa y las mismas pestañas de pastilla
-   verde. Eso es lo que hace que dos capturas se confundan: el 80% de la
-   pantalla es contenido, no menú.
-
-   La regla aquí es una sola: SUPERFICIE PLANA, SEPARACIÓN POR LÍNEA.
-   El POS apila tarjetas que flotan; esto dibuja regiones que se tocan.
-   Es la diferencia entre un panel de administración genérico y una
-   herramienta de trabajo. */
-
 .card,.stat-card{
-  border-radius:var(--lf-r-sm);
-  box-shadow:none;
-  border:1px solid var(--lf-linea);
-  background:var(--lf-sup);
-  transition:border-color .16s var(--crm-ease);
+  border:1px solid var(--lf-linea); border-radius:var(--lf-r);
+  background:var(--lf-sup); box-shadow:none;
+  transition:border-color var(--crm-t) var(--crm-e);
 }
-.card:hover{ box-shadow:none; border-color:var(--lf-linea-f); }
+.card:hover{ border-color:var(--lf-linea-f); box-shadow:none; }
 
-/* Las pestañas: subrayado, no pastilla.
-   La pastilla verde rellena es el patrón de LibertyFin POS y de otros
-   mil paneles. Un subrayado de 2px dice lo mismo, pesa menos y deja que
-   el verde sirva para lo que importa: las acciones. */
+/* Pestañas: subrayado, no pastilla rellena. La pastilla verde es el
+   patrón del POS y de otros mil paneles. */
 .nav-pills .nav-link,.lf-tabs a,.lf-pestanas a{
   background:transparent !important; color:var(--lf-tinta-3);
   border-radius:0; padding:9px 2px; margin-right:22px;
   font-weight:500; font-size:13.5px;
   box-shadow:inset 0 -2px 0 transparent;
-  transition:color .16s var(--crm-ease), box-shadow .16s var(--crm-ease);
+  transition:color var(--crm-t) var(--crm-e), box-shadow var(--crm-t) var(--crm-e);
 }
 .nav-pills .nav-link:hover,.lf-tabs a:hover,.lf-pestanas a:hover{
   color:var(--lf-tinta); box-shadow:inset 0 -2px 0 var(--lf-linea-f);
@@ -526,156 +209,96 @@ small,.pz-asunto,.pz-resp,.pz-notas small{ letter-spacing:.005em; }
   box-shadow:inset 0 -2px 0 var(--lf-brand);
 }
 
-/* Los avisos: una línea de color a la izquierda sobre fondo casi
-   blanco. El bloque relleno de color ocupa media pantalla para decir
-   una frase. */
 .alert{
   border:1px solid var(--lf-linea); border-left:3px solid var(--lf-brand);
-  border-radius:var(--lf-r-xs); background:var(--lf-sup);
-  padding:12px 16px; font-size:13.5px; box-shadow:none;
+  border-radius:var(--lf-r-sm); background:var(--lf-sup);
+  padding:13px 16px; font-size:13.5px; box-shadow:none;
 }
 .alert-warning{ border-left-color:var(--lf-amb); }
 .alert-danger{ border-left-color:var(--lf-rojo); }
 .alert-info{ border-left-color:var(--lf-info); }
 
-/* Los botones secundarios, sin relleno. Una pantalla con seis botones
-   grises rellenos se ve como un formulario de hace quince años. */
+.btn{
+  border-radius:var(--lf-r-xs); font-size:13.5px; padding:8px 15px; font-weight:500;
+  transition:transform .12s var(--crm-e), background-color var(--crm-t) var(--crm-e),
+             border-color var(--crm-t) var(--crm-e);
+}
+.btn:active{ transform:scale(.978); }
+.btn-primary{ box-shadow:none; font-weight:600; }
 .btn:not(.btn-primary):not(.btn-danger){
-  background:transparent; border:1px solid var(--lf-linea-f);
-  color:var(--lf-tinta-2); font-weight:500;
+  background:transparent; border:1px solid var(--lf-linea-f); color:var(--lf-tinta-2);
 }
 .btn:not(.btn-primary):not(.btn-danger):hover{
   background:var(--lf-sup-2); border-color:var(--lf-tinta-4); color:var(--lf-tinta);
 }
-.btn{ border-radius:var(--lf-r-xs); font-size:13.5px; padding:8px 15px; }
 .btn-sm{ font-size:12.5px; padding:6px 12px; }
 
-/* Los campos de archivo no desbordan.
-   En la captura salía «Sin arch…ionados» cortado a la mitad: el control
-   nativo no cabía y el navegador lo recortó por el centro. */
+.form-control,.form-select{
+  border:1px solid var(--lf-linea); background:var(--lf-sup);
+  border-radius:var(--lf-r-xs); font-size:13.5px;
+  transition:border-color var(--crm-t) var(--crm-e), box-shadow var(--crm-t) var(--crm-e);
+}
+.form-control:focus,.form-select:focus{
+  border-color:var(--lf-brand); box-shadow:0 0 0 3px color-mix(in srgb, var(--lf-brand) 16%, transparent);
+}
 input[type="file"]{ max-width:100%; font-size:12.5px; }
-.card input[type="file"]{ display:block; width:100%; margin-bottom:8px; }
 
-/* Las tarjetas de una rejilla, a la misma altura. En la captura unas
-   eran más altas que otras según la longitud del título. */
-.lf-rejilla,.row{ align-items:stretch; }
-.card{ display:flex; flex-direction:column; }
-.card > :last-child{ margin-top:auto; }
-
-/* La flecha del botón apunta a donde va a pasar: abre a la derecha,
-   cierra a la izquierda. */
-.lf-ang-ico{ transition:transform .22s var(--crm-ease); }
-html.menu-ancho .lf-ang-ico{ transform:rotate(180deg); }
-
-/* ════════════════════════════════════════════════════════
-   LA PALETA DE COMANDOS (Ctrl+K)
-   ════════════════════════════════════════════════════════
-   Flota alta, no centrada: a un tercio de la pantalla, que es donde el
-   ojo ya está. Centrada verticalmente obliga a bajar la mirada y los
-   resultados crecen hacia abajo tapando lo que importa. */
-
-.cmdk-velo{
-  position:fixed; inset:0; z-index:300;
-  background:rgba(12,20,16,.42);
-  backdrop-filter:blur(3px);
-  opacity:0; pointer-events:none;
-  transition:opacity .16s var(--crm-ease);
-}
-.cmdk-velo.on{ opacity:1; pointer-events:auto; }
-
-.cmdk{
-  position:fixed; z-index:301;
-  top:14vh; left:50%;
-  width:min(640px, calc(100vw - 32px));
-  transform:translateX(-50%) translateY(-10px) scale(.98);
-  opacity:0; pointer-events:none;
-  background:var(--lf-sup);
-  border-radius:16px;
-  box-shadow:0 0 0 1px var(--lf-linea-f), 0 24px 70px rgba(12,20,16,.26);
-  overflow:hidden;
-  transition:opacity .16s var(--crm-ease), transform .22s var(--crm-ease-s);
-}
-.cmdk.on{ opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0) scale(1); }
-
-.cmdk-barra{
-  display:flex; align-items:center; gap:12px;
-  padding:16px 18px;
-  box-shadow:inset 0 -1px 0 var(--lf-linea);
-}
-.cmdk-lupa{ width:19px; height:19px; color:var(--lf-tinta-4); flex:0 0 auto; }
-.cmdk-barra input{
-  flex:1; border:none; outline:none; background:transparent;
-  font:inherit; font-size:16px; color:var(--lf-tinta);
-  letter-spacing:-.01em;
-}
-.cmdk-barra input::placeholder{ color:var(--lf-tinta-4); }
-
-kbd{
-  font:inherit; font-size:10.5px; font-weight:600;
-  background:var(--lf-vidrio); color:var(--lf-tinta-4);
-  padding:3px 6px; border-radius:5px; line-height:1.4;
-  box-shadow:inset 0 -1px 0 var(--lf-linea-f);
+:where(a,button,input,select,textarea):focus-visible{
+  outline:2px solid var(--lf-brand); outline-offset:2px; border-radius:var(--lf-r-xs);
 }
 
-.cmdk-lista{ max-height:min(52vh, 430px); overflow-y:auto; padding:7px; }
-.cmdk-grupo{
-  font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
-  font-weight:600; color:var(--lf-tinta-4);
-  padding:11px 11px 6px;
+/* Tablas sin rejilla: las columnas ya se alinean solas. */
+.table{ border-collapse:separate; border-spacing:0; }
+.table th{
+  border:none; background:transparent;
+  font-size:11px; letter-spacing:.07em; text-transform:uppercase;
+  color:var(--lf-tinta-4); font-weight:600;
 }
-.cmdk-it{
-  display:flex; align-items:baseline; gap:11px;
-  padding:9px 11px; border-radius:9px;
-  text-decoration:none; color:var(--lf-tinta);
-  /* Sin transición: con el teclado se recorren diez en un segundo y
-     una animación de 150 ms deja la selección siempre un paso atrás. */
-}
-.cmdk-it .cmdk-t{ font-size:14px; font-weight:500; letter-spacing:-.01em; }
-.cmdk-it .cmdk-s{
-  font-size:12.5px; color:var(--lf-tinta-4);
-  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-}
-.cmdk-it.on{ background:var(--lf-brand); }
-.cmdk-it.on .cmdk-t{ color:#fff; font-weight:600; }
-.cmdk-it.on .cmdk-s{ color:rgba(255,255,255,.75); }
+.table td{ border:none; box-shadow:inset 0 -1px 0 var(--lf-linea); }
+.table tbody tr{ transition:background-color .12s var(--crm-e); }
+.table tbody tr:hover{ background:var(--lf-sup-2); }
 
-.cmdk-nada{
-  padding:30px; text-align:center; color:var(--lf-tinta-4); font-size:13.5px;
-  display:flex; align-items:center; justify-content:center; gap:9px;
-}
-.cmdk-pulso{
-  width:7px; height:7px; border-radius:50%; background:var(--lf-brand);
-  animation:cmdkPulso .9s ease-in-out infinite;
-}
-@keyframes cmdkPulso{ 0%,100%{opacity:.25;transform:scale(.8)} 50%{opacity:1;transform:scale(1.15)} }
+.badge{ border-radius:var(--lf-r-xs); font-weight:600; }
 
-.cmdk-pie{
-  display:flex; align-items:center; gap:16px;
-  padding:9px 16px; font-size:11.5px; color:var(--lf-tinta-4);
-  background:var(--lf-sup-2);
-  box-shadow:inset 0 1px 0 var(--lf-linea);
-}
-.cmdk-pie span{ display:flex; align-items:center; gap:5px; }
-.cmdk-marca{ margin-left:auto; font-weight:600; color:var(--lf-tinta-4); letter-spacing:-.01em; }
+/* ── Precisión ──
+   Lo que hace que algo se vea caro es que todo esté a la misma rejilla,
+   con los mismos pesos. Lo que lo hace ver barato es la inconsistencia,
+   y los efectos encima no la tapan: la subrayan. */
+.table td,.stat-card,dd,.pz-val,.pz-cifras{ font-variant-numeric:tabular-nums; }
+h1,h2,h3,h4{ font-weight:650; letter-spacing:-.025em; }
+b,strong{ font-weight:600; }
+::selection{ background:color-mix(in srgb, var(--lf-brand) 24%, transparent); }
 
-/* El botón de la barra de arriba. Parece un campo de búsqueda pero es
-   un botón: hace evidente que la paleta existe, porque un atajo que
-   nadie ve no lo usa nadie. */
-.cmdk-lanzar{
-  display:flex; align-items:center; gap:9px;
-  background:var(--lf-sup); border:1px solid var(--lf-linea);
-  border-radius:999px; padding:6px 10px 6px 13px;
-  color:var(--lf-tinta-4); font:inherit; font-size:13px; cursor:pointer;
-  transition:border-color .16s var(--crm-ease), color .16s var(--crm-ease);
-  min-width:210px;
+*{ scrollbar-width:thin; scrollbar-color:var(--lf-linea-f) transparent; }
+*::-webkit-scrollbar{ width:9px; height:9px; }
+*::-webkit-scrollbar-track{ background:transparent; }
+*::-webkit-scrollbar-thumb{
+  background:var(--lf-linea-f); border-radius:999px;
+  border:2px solid transparent; background-clip:content-box;
 }
-.cmdk-lanzar:hover{ border-color:var(--lf-tinta-4); color:var(--lf-tinta-2); }
-.cmdk-lanzar svg{ width:15px; height:15px; flex:0 0 auto; }
-.cmdk-lanzar span{ flex:1; text-align:left; }
-@media(max-width:720px){ .cmdk-lanzar{ min-width:0; padding:7px; } .cmdk-lanzar span,.cmdk-lanzar kbd{ display:none; } }
+*::-webkit-scrollbar-thumb:hover{ background:var(--lf-tinta-4); background-clip:content-box; }
 
-@media (prefers-reduced-motion: reduce){
-  .cmdk{ transition:opacity .01ms; transform:translateX(-50%); }
-  .cmdk.on{ transform:translateX(-50%); }
-  .cmdk-pulso{ animation:none; }
+/* ── Entrada ── */
+.crm-aparece{ animation:crmSube .32s var(--crm-e) both; }
+@keyframes crmSube{ from{ opacity:0; transform:translateY(7px); } to{ opacity:1; transform:none; } }
+
+/* ── Avisos flotantes ── */
+.crm-avisos{
+  position:fixed; right:20px; bottom:20px; z-index:200;
+  display:flex; flex-direction:column; gap:9px; pointer-events:none;
+  max-width:min(380px, calc(100vw - 40px));
 }
+.crm-aviso{
+  pointer-events:auto; background:var(--lf-tinta); color:var(--lf-lienzo);
+  padding:12px 18px; border-radius:var(--lf-r-sm); font-size:13.5px; line-height:1.4;
+  box-shadow:var(--crm-e3); display:flex; align-items:center; gap:10px;
+  animation:crmAvEntra .28s var(--crm-e) both;
+}
+.crm-aviso::before{
+  content:""; width:3px; align-self:stretch; border-radius:999px;
+  background:var(--lf-brand); flex:0 0 auto; margin:-2px 2px -2px 0;
+}
+.crm-aviso.malo::before{ background:var(--lf-rojo); }
+.crm-aviso.yendose{ animation:crmAvSale .24s var(--crm-e) forwards; }
+@keyframes crmAvEntra{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:none; } }
+@keyframes crmAvSale{ to{ opacity:0; transform:translateX(16px); } }

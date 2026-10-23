@@ -272,6 +272,7 @@ $r->get ('/seguros/{id}',           ['LibertyFin\\Controlador\\SegurosControlado
 $r->post('/seguros/{id}/renovar',   ['LibertyFin\\Controlador\\SegurosControlador', 'renovar']);
 $r->post('/seguros/{id}/estado',    ['LibertyFin\\Controlador\\SegurosControlador', 'estado']);
 
+$r->get ('/hoy', ['LibertyFin\\Controlador\\HoyControlador', 'index']);
 $r->get ('/buscar', ['LibertyFin\\Controlador\\BuscarControlador', 'buscar']);
 
 // ── Prospectos (módulo «prospectos») ──
@@ -450,6 +451,7 @@ $permisos = [
   '/seguros/{id}'            => 'ver.seguros',
   '/seguros/{id}/renovar'    => 'editar.seguros',
   '/seguros/{id}/estado'     => 'editar.seguros',
+  '/hoy'                     => 'ver.prospectos',
   '/buscar'                  => 'ver.clientes',
   '/prospectos'              => 'ver.prospectos',
   '/prospectos/guardar'      => 'editar.prospectos',

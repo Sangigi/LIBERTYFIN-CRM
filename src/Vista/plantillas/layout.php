@@ -98,7 +98,7 @@ $lfQuien = \LibertyFin\Controlador\PushControlador::quien(\LibertyFin\Servicio\S
 <?php /* Esta línea NO puede ir con `defer`: pone el ancho del menú, y si
    llega después de pintar se ve el salto de 240px a 62px en cada página.
    Es lo único que se ejecuta aquí, y por eso cabe suelto. */ ?>
-<script>try{if(localStorage.getItem('lf-menu-ancho')==='1')document.documentElement.classList.add('menu-ancho')}catch(e){}</script>
+<script>try{if(localStorage.getItem('lf-menu-chico')==='1')document.documentElement.classList.add('menu-chico')}catch(e){}</script>
 </head>
 <body data-lf-token="<?= P::e($_SESSION['lf_token']) ?>" data-lf-ayuda="<?= $lfAyuda ? '1' : '0' ?>"
       <?php /* De quién es esta sesión. La caja lo usa para que su ticket

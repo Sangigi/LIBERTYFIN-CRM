@@ -312,6 +312,54 @@ final class ProspectoRepo
     }
 
     /**
+     * Cuánto dinero hay en cada etapa.
+     *
+     * Es lo que da forma al embudo de la portada: la altura de cada
+     * tramo es su monto, no un ancho fijo. Cuatro barras iguales no son
+     * un embudo; con la forma real se ve dónde se atasca el trabajo sin
+     * leer un solo número.
+     */
+    public function porEtapa()
+    {
+        $sql = "SELECT etapa, COUNT(*) n, COALESCE(SUM(valor),0) monto
+                  FROM lf_prospectos p
+                 WHERE etapa NOT IN ('ganado','perdido')"
+             . $this->alcance->filtroPos('responsable_id', 'p')
+             . " GROUP BY etapa";
+        $st = $this->db->prepare($sql);
+        $st->execute($this->alcance->valores());
+
+        $r = [];
+        foreach (array_keys($this->etapas()) as $e) {
+            if ($e === 'ganado' || $e === 'perdido') continue;
+            $r[$e] = ['n' => 0, 'monto' => 0.0];
+        }
+        foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $f) {
+            if (!isset($r[$f['etapa']])) continue;
+            $r[$f['etapa']] = ['n' => (int)$f['n'], 'monto' => (float)$f['monto']];
+        }
+        return $r;
+    }
+
+    /**
+     * De dónde llegaron los leads en los últimos días.
+     *
+     * Es el dato con el que se decide dónde gastar en anuncios, y el
+     * que se pierde si una plataforma entra sin origen propio.
+     */
+    public function porOrigen($dias = 7)
+    {
+        $sql = "SELECT origen, COUNT(*) n
+                  FROM lf_prospectos p
+                 WHERE p.creado_en >= DATE_SUB(NOW(), INTERVAL ? DAY)"
+             . $this->alcance->filtroPos('responsable_id', 'p')
+             . " GROUP BY origen ORDER BY n DESC";
+        $st = $this->db->prepare($sql);
+        $st->execute(array_merge([(int)$dias], $this->alcance->valores()));
+        return $st->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * El reporte que pidió el director: cuántas cotizaciones se
      * concretaron esta semana, y cuánto se quedó en el camino.
      */

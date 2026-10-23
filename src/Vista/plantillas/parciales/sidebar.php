@@ -22,7 +22,8 @@ use LibertyFin\Datos\ConfigRepo;
 // su ficha, que sí dice de quién son los números.
 $deEmpresa = [
   ['grupo' => 'Operación'],
-  ['ruta' => '/prospectos', 'icono' => 'tablero', 'texto' => 'Prospectos',    'p' => 'ver.prospectos',   'mod' => 'prospectos'],
+  ['ruta' => '/hoy',        'icono' => 'panel',   'texto' => 'Hoy',           'p' => 'ver.prospectos',   'mod' => 'prospectos'],
+  ['ruta' => '/prospectos', 'icono' => 'tablero', 'texto' => 'Embudo',        'p' => 'ver.prospectos',   'mod' => 'prospectos'],
   ['ruta' => '/canales',    'icono' => 'chat',    'texto' => 'Canales',       'p' => 'ver.canales',      'mod' => 'canales'],
   ['ruta' => '/panel',           'icono' => 'panel',   'texto' => 'Panel',         'p' => 'ver.panel'],
   // Los módulos (Servicio\Modulos): solo si la empresa los tiene activos.
@@ -168,9 +169,13 @@ foreach ($menu as $m) {
      embudo, que es donde se trabaja. Aquí es opcional y se recuerda en
      el navegador de cada quien, porque quien lleva dos días en el
      sistema todavía necesita leer los nombres. */ ?>
+  <?php /* Reducir el menú. Ctrl+B también, que es el atajo que usa media
+     industria para esto y así no hay que aprenderlo. Cada icono enseña
+     su nombre al pasar: reducir tiene que ser ganar sitio, no esconder
+     el sistema. */ ?>
   <button type="button" class="lf-angosta" id="lfAngosta"
-          title="Ancho del menú" aria-label="Cambiar ancho del menú">
-    <span class="lf-ang-ico">&#8250;</span><span class="lf-ang-txt">Ocultar nombres</span>
+          title="Reducir el menú" aria-label="Reducir el menú">
+    <span class="lf-ang-ico">&#8249;</span><span class="lf-ang-txt">Reducir el menú</span>
   </button>
 
   <div class="lf-pie">

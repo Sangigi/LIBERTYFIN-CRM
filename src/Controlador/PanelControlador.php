@@ -16,12 +16,12 @@ final class PanelControlador
         // Panel, las preguntas de la configuración inicial.
         if (!empty($_SESSION['lf_bienvenida'])) { header('Location: /bienvenida'); exit; }
 
-        // EL EMBUDO VA PRIMERO.
+        // LA PORTADA ES «HOY», NO LAS CIFRAS.
         //
-        // En un CRM la pregunta al entrar no es «cuánto vendí el mes
-        // pasado» sino «a quién le hablo ahora». El panel de cifras sigue
-        // existiendo —y sigue siendo útil para quien dirige— pero vive en
-        // /panel/cifras, no en la puerta.
+        // La pregunta con la que alguien abre su CRM a las nueve de la
+        // mañana no es «cuánto vendí el mes pasado» sino «a quién le
+        // hablo hoy». El panel de cifras sigue existiendo para quien
+        // dirige, pero en /panel?cifras=1, no en la puerta.
         //
         // Solo se desvía si el módulo está encendido y la persona puede
         // verlo: a un asistente sin ese permiso dejarlo fuera de su
@@ -29,7 +29,7 @@ final class PanelControlador
         if (empty($_GET['cifras'])
             && \LibertyFin\Servicio\Modulos::deSesion()->activo('prospectos')
             && \LibertyFin\Dominio\Permisos::puede('ver.prospectos')) {
-            header('Location: /prospectos'); exit;
+            header('Location: /hoy'); exit;
         }
 
         $db    = Conexion::de($_SESSION['empresa_db']);
