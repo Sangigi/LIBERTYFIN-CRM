@@ -46,11 +46,7 @@ use LibertyFin\Vista\Plantilla as P;
     <?php endif; ?>
 
     <?php /* `data-lf-cuenta`: soporte guarda el tema en su cuenta, no solo aquí. */ ?>
-    <button type="button" class="lf-tema" id="lfTema"<?= !empty($_SESSION['plataforma']) ? ' data-lf-cuenta' : '' ?>
-            aria-label="Cambiar entre claro y oscuro" title="Cambiar tema">
-      <span class="claro"><?= W::icono('luna', '16px') ?></span>
-      <span class="oscuro"><?= W::icono('sol', '16px') ?></span>
-    </button>
+
   </div>
 </header>
 
@@ -81,3 +77,12 @@ use LibertyFin\Vista\Plantilla as P;
   });
 })();
 </script>
+
+<?php /* El tema, flotando abajo a la derecha.
+   Arriba competía con el buscador por el mismo rincón, y cambiar de
+   tema es algo que se hace una vez al día, no una vez por pantalla. */ ?>
+    <button type="button" class="lf-tema lf-tema-flota" id="lfTema"<?= !empty($_SESSION['plataforma']) ? ' data-lf-cuenta' : '' ?>
+            aria-label="Cambiar entre claro y oscuro" title="Cambiar tema">
+      <span class="claro"><?= W::icono('luna', '16px') ?></span>
+      <span class="oscuro"><?= W::icono('sol', '16px') ?></span>
+    </button>

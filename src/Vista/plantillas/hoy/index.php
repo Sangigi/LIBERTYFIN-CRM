@@ -199,8 +199,9 @@ $enPalabras = function ($fecha) {
              box-shadow .14s var(--crm-e)}
 .hy-fila:hover{border-color:var(--lf-linea-f);transform:translateX(3px);
   box-shadow:0 2px 12px #1918140f}
-.hy-av{width:36px;height:36px;border-radius:11px;flex:0 0 auto;display:grid;
-  place-items:center;font-size:12px;font-weight:650;color:#fff}
+.hy-av{width:36px;height:36px;border-radius:11px;flex:0 0 auto;display:flex;
+  align-items:center;justify-content:center;line-height:1;
+  font-size:12.5px;font-weight:650;color:#fff;letter-spacing:.02em}
 .hy-txt{flex:1;min-width:0}
 .hy-txt b{display:block;font-size:14.5px;font-weight:600;letter-spacing:-.012em}
 .hy-txt small{color:var(--lf-tinta-3);font-size:12.5px}

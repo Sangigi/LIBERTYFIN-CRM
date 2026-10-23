@@ -74,7 +74,12 @@ unset($_SESSION['lf_entrada']);
 // así que basta con este dato para que el sistema entero cambie.
 $marca = $_SESSION['lf_marca_color'] ?? '';
 if (preg_match('/^#[0-9a-fA-F]{6}$/', (string)$marca)): ?>
-<style>:root{--lf-brand:<?= $marca ?>}</style>
+<?php /* El color que eligió la empresa ya NO repinta el sistema entero.
+   El verde de LibertyFin es parte del producto, igual que su nombre: si
+   cada empresa lo cambia, dos capturas del mismo CRM no se reconocen
+   como el mismo CRM. Se queda en su logo, que es donde la marca del
+   cliente tiene sentido. */ ?>
+<style>:root{--lf-marca:<?= $marca ?>}</style>
 <?php endif; ?>
 <?php
 // El chat de soporte: conversaciones en vivo, avisos de respuesta y el

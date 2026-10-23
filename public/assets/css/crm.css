@@ -148,7 +148,7 @@ html.menu-chico .lf-nav a:focus-visible::after{opacity:1;transform:translateY(-5
 .lf-marca{display:flex;align-items:center;gap:10px;padding:0 10px 22px;
   font-weight:650;letter-spacing:-.03em;font-size:16px;color:var(--lf-tinta)}
 .lf-marca .g{width:28px;height:28px;border-radius:8px;background:var(--lf-brand);
-  color:#fff;display:grid;place-items:center;font-size:13px;font-weight:700;flex:0 0 auto;
+  color:#fff;display:flex;align-items:center;justify-content:center;line-height:1;font-size:13px;font-weight:700;flex:0 0 auto;
   object-fit:cover}
 .lf-marca span{min-width:0;line-height:1.25}
 .lf-marca b{display:block;font-weight:650;font-size:15px;overflow:hidden;
@@ -363,7 +363,7 @@ input[type=checkbox],input[type=radio]{width:auto;accent-color:var(--lf-brand)}
 .nav-pills .nav-link.active,.lf-tabs a.on,.lf-pestanas a.on{
   color:var(--lf-tinta);font-weight:600;box-shadow:inset 0 -2px 0 var(--lf-brand)}
 
-.lf-av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;
+.lf-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;line-height:1;
   font-size:12px;font-weight:650;color:#fff;background:var(--lf-info);flex:0 0 auto}
 .lf-hero{padding:22px 24px;background:var(--lf-sup);border:1px solid var(--lf-linea);
   border-radius:var(--r);margin-bottom:22px}
@@ -486,7 +486,7 @@ dialog::backdrop{background:#1918145e;backdrop-filter:blur(2px)}
 .lf-tema,.lf-campana-bt,.lf-acc > button:not(.cmdk-lanzar):not(.btn){
   width:34px;height:34px;border-radius:9px;border:1px solid transparent;
   background:transparent;color:var(--lf-tinta-3);cursor:pointer;
-  display:grid;place-items:center;
+  display:flex;align-items:center;justify-content:center;
   transition:background var(--t) var(--e),color var(--t) var(--e)}
 .lf-tema:hover,.lf-campana-bt:hover,
 .lf-acc > button:not(.cmdk-lanzar):not(.btn):hover{
@@ -512,3 +512,131 @@ dialog::backdrop{background:#1918145e;backdrop-filter:blur(2px)}
    porque el contenedor no reservaba sitio para el pie. */
 .lf-side{padding-bottom:16px}
 .lf-nav{flex:0 0 auto}
+
+/* ════════════════════════════════════════════════════════
+   7 · LO QUE FALTABA
+   ════════════════════════════════════════════════════════ */
+
+/* ── El botón de tema ──
+   Salían la luna Y el sol a la vez: el markup trae los dos y la hoja
+   del POS escondía el que no tocaba. Al quitarla se vieron ambos. */
+.lf-tema .oscuro{display:none}
+[data-theme="dark"] .lf-tema .claro{display:none}
+[data-theme="dark"] .lf-tema .oscuro{display:block}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .lf-tema .claro{display:none}
+  :root:not([data-theme="light"]) .lf-tema .oscuro{display:block}
+}
+/* Flotando abajo a la derecha, como en el prototipo. Arriba competía
+   con el buscador por el mismo rincón, y el tema se cambia una vez al
+   día, no una vez por pantalla. */
+.lf-tema-flota{
+  display:flex;align-items:center;justify-content:center;
+  position:fixed;right:20px;bottom:20px;z-index:60;
+  width:40px;height:40px;border-radius:50%;
+  background:var(--lf-sup);border:1px solid var(--lf-linea);
+  color:var(--lf-tinta-3);box-shadow:0 4px 16px #19181412}
+.lf-tema-flota:hover{color:var(--lf-tinta);background:var(--lf-sup)}
+
+/* ── El logo lleva el color de la empresa ──
+   Es el único sitio donde la marca del cliente manda. */
+.lf-marca .g{background:var(--lf-marca,var(--lf-brand))}
+
+/* ── El pie del menú se queda a la vista ──
+   Con veinte secciones, el botón de reducir caía bajo el pliegue y
+   parecía no existir. Ahora el menú rueda y el pie no. */
+.lf-side{padding-bottom:0}
+.lf-nav{flex:1 1 auto;overflow-y:auto;overflow-x:visible;min-height:0;padding-bottom:8px}
+.lf-angosta,.lf-ucard{flex:0 0 auto;position:sticky;bottom:0;background:var(--lf-lienzo)}
+.lf-angosta{margin-top:0;border-top:1px solid var(--lf-linea);border-radius:0;padding:11px 12px}
+.lf-ucard{padding:10px 12px 16px;border-top:none}
+
+/* ── El embudo de Hoy, más estrecho ──
+   Cuatro barras a todo lo ancho de una pantalla de 1900px se leen como
+   un banner, no como un gráfico. Con un ancho máximo recuperan
+   proporción y el ojo las compara de una mirada. */
+.hy-flujo{max-width:760px}
+.hy-embudo .hy-eh{max-width:760px}
+
+/* ════════════════════════════════════════════════════════
+   8 · AGENDA
+   ════════════════════════════════════════════════════════
+   Era la pantalla que peor quedó: su rejilla por horas vivía entera en
+   la hoja del POS. Sin ella, las horas salían como una línea de texto
+   corrido y las columnas apiladas. */
+.lf-ag-semana{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-bottom:14px}
+.lf-ag-semana a,.lf-ag-f,.lf-ag-flecha{
+  display:inline-flex;align-items:center;gap:4px;padding:6px 11px;border-radius:9px;
+  font-size:13px;color:var(--lf-tinta-2);text-decoration:none;
+  border:1px solid transparent;transition:background var(--t) var(--e)}
+.lf-ag-semana a:hover,.lf-ag-flecha:hover{background:var(--lf-sup-2);text-decoration:none}
+.lf-ag-semana a.on,.lf-ag-f.on{background:var(--lf-brand);color:#fff;font-weight:600}
+.lf-ag-semana a b,.lf-ag-f b{font-weight:650}
+
+.lf-ag-quien{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.lf-ag-quien a,.lf-ag-quien button{
+  padding:6px 13px;border-radius:999px;font-size:12.5px;border:1px solid var(--lf-linea);
+  background:var(--lf-sup);color:var(--lf-tinta-2);text-decoration:none;cursor:pointer}
+.lf-ag-quien .on{background:var(--lf-brand);color:#fff;border-color:var(--lf-brand);font-weight:600}
+
+.lf-ag-scroll{overflow-x:auto;border:1px solid var(--lf-linea);border-radius:var(--r);
+  background:var(--lf-sup)}
+/* La rejilla: una columna de horas fija y una por especialista. */
+.lf-ag-grid{display:grid;grid-template-columns:62px repeat(var(--cols,1),minmax(150px,1fr));
+  min-width:min-content}
+.lf-ag-horas,.lf-ag-col{display:flex;flex-direction:column;min-width:0}
+.lf-ag-horas{border-right:1px solid var(--lf-linea);background:var(--lf-sup-2)}
+.lf-ag-col{border-right:1px solid var(--lf-linea)}
+.lf-ag-col:last-child{border-right:none}
+.lf-ag-colcab{height:38px;display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;color:var(--lf-tinta-2);
+  border-bottom:1px solid var(--lf-linea);position:sticky;top:0;
+  background:var(--lf-sup);z-index:2;padding:0 8px;text-align:center}
+.lf-ag-horas .lf-ag-colcab{background:var(--lf-sup-2)}
+.lf-ag-cuerpo{position:relative;height:var(--alto,600px)}
+/* Las horas, alineadas con el borde de su franja y no centradas: así
+   la raya de las 10:00 cae donde empieza la hora. */
+.lf-ag-horas .lf-ag-cuerpo > *{
+  position:absolute;left:0;right:0;font-size:11px;color:var(--lf-tinta-4);
+  padding-right:8px;text-align:right;transform:translateY(-6px)}
+.lf-ag-hueco{position:absolute;left:2px;right:2px;border-radius:7px;cursor:pointer;
+  border-top:1px solid var(--lf-linea);
+  transition:background var(--t) var(--e)}
+.lf-ag-hueco:hover{background:rgba(75,170,92,.08)}
+.lf-ag-item{position:absolute;left:3px;right:3px;border-radius:9px;padding:6px 9px;
+  background:var(--lf-brand);color:#fff;font-size:12px;line-height:1.3;
+  overflow:hidden;cursor:pointer;box-shadow:0 1px 4px #1918141f}
+.lf-ag-item b{display:block;font-weight:650;font-size:12.5px}
+.lf-ag-item small{opacity:.85;font-size:11px}
+.lf-ag-item.cancelada{background:var(--lf-tinta-4)}
+.lf-ag-item.atendida{background:var(--lf-tinta-2)}
+.lf-ag-mas{font-size:11.5px;color:var(--lf-tinta-3)}
+.lf-ag-ir{font-size:12.5px}
+.lf-ag-lista{list-style:none;padding:0;margin:0}
+.lf-ag-cita{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--lf-linea)}
+.lf-ag-cita:last-child{border:none}
+
+/* ── Los bloques plegables (`<details>`) ──
+   Salían con el triángulo negro del navegador y el icono debajo del
+   texto. Es el patrón de «Agendar una cita», «Horario» y media docena
+   de pantallas más. */
+details.lf-alta,details.lf-blq,.lf-main details{
+  background:var(--lf-sup);border:1px solid var(--lf-linea);
+  border-radius:var(--r);margin-bottom:16px}
+.lf-main details > summary{
+  display:flex;align-items:center;gap:9px;padding:14px 18px;cursor:pointer;
+  font-size:14px;font-weight:600;list-style:none;color:var(--lf-tinta)}
+.lf-main details > summary::-webkit-details-marker{display:none}
+.lf-main details > summary::marker{content:""}
+/* La flecha, dibujada por nosotros y girando al abrir. */
+.lf-main details > summary::after{
+  content:"";margin-left:auto;width:7px;height:7px;flex:0 0 auto;
+  border-right:2px solid var(--lf-tinta-4);border-bottom:2px solid var(--lf-tinta-4);
+  transform:rotate(45deg) translate(-2px,-2px);transition:transform .2s var(--e)}
+.lf-main details[open] > summary::after{transform:rotate(-135deg) translate(-2px,-2px)}
+.lf-main details > summary:hover{background:var(--lf-sup-2)}
+.lf-main details > :not(summary){padding:0 18px 18px}
+.lf-main details > summary svg{width:16px;height:16px}
+
+/* ── Ficha del prospecto: el estado no se pinta sobre el verde ── */
+.pz-panel .badge,.lf-cont .badge{max-width:100%}
