@@ -22,14 +22,14 @@ use LibertyFin\Datos\ConfigRepo;
 // su ficha, que sí dice de quién son los números.
 $deEmpresa = [
   ['grupo' => 'Operación'],
-  ['ruta' => '/hoy',        'icono' => 'panel',   'texto' => 'Hoy',           'p' => 'ver.prospectos',   'mod' => 'prospectos'],
+  ['ruta' => '/hoy',        'icono' => 'reloj',   'texto' => 'Hoy',           'p' => 'ver.prospectos',   'mod' => 'prospectos'],
   ['ruta' => '/prospectos', 'icono' => 'tablero', 'texto' => 'Embudo',        'p' => 'ver.prospectos',   'mod' => 'prospectos'],
   ['ruta' => '/canales',    'icono' => 'chat',    'texto' => 'Canales',       'p' => 'ver.canales',      'mod' => 'canales'],
   ['ruta' => '/panel',           'icono' => 'panel',   'texto' => 'Panel',         'p' => 'ver.panel'],
   // Los módulos (Servicio\Modulos): solo si la empresa los tiene activos.
   ['ruta' => '/agenda',     'icono' => 'agenda',   'texto' => 'Agenda',        'p' => 'ver.agenda',       'mod' => 'agenda'],
   ['ruta' => '/legal',      'icono' => 'libro',   'texto' => 'Asuntos',       'p' => 'ver.legal',        'mod' => 'legal'],
-  ['ruta' => '/seguros',    'icono' => 'escudo',  'texto' => 'Pólizas',       'p' => 'ver.seguros',      'mod' => 'seguros'],
+  ['ruta' => '/seguros',    'icono' => 'doc',     'texto' => 'Pólizas',       'p' => 'ver.seguros',      'mod' => 'seguros'],
   ['ruta' => '/ventas',     'icono' => 'venta',   'texto' => 'Contratos',     'p' => 'ver.contratos'],
   ['ruta' => '/clientes',   'icono' => 'cliente', 'texto' => 'Clientes',      'p' => 'ver.clientes'],
   ['ruta' => '/cotizaciones','icono' => 'doc',    'texto' => 'Cotizaciones',  'p' => 'ver.cotizaciones', 'mod' => 'cotizaciones'],

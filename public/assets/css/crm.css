@@ -451,3 +451,64 @@ dialog::backdrop{background:#1918145e;backdrop-filter:blur(2px)}
    más se percibe como «esto está roto». */
 .lf-main{overflow-x:hidden}
 .lf-main table{max-width:100%}
+
+/* ════════════════════════════════════════════════════════
+   6 · ARREGLOS DEL CHASIS REAL
+   ════════════════════════════════════════════════════════
+   Lo que se vio al montarlo de verdad y no en el prototipo. */
+
+/* 1 · EL CONTENIDO SE ENCOGÍA A SU TEXTO.
+   `.lf-app` es flex y `.lf-main` es uno de sus hijos. Sin `flex:1`, un
+   hijo flex se queda del ancho de su contenido: por eso la pantalla
+   salía con 700px de contenido y mil de hueco a la derecha.
+   Y `.lf-side` es `position:fixed`, así que ya no ocupa su sitio en la
+   fila: el margen izquierdo es lo que reserva su espacio. */
+.lf-app{display:flex;min-height:100vh;align-items:stretch}
+.lf-main{flex:1 1 auto;min-width:0;width:100%}
+.lf-cont{width:100%;min-width:0}
+
+/* 2 · LOS ICONOS SIN TAMAÑO SALÍAN GIGANTES.
+   Un <svg> sin width ni height ocupa lo que le dé la gana: la lupa del
+   buscador llegó a medir 110px. Las reglas que los acotaban vivían en la
+   hoja del POS, así que al quitarla se soltaron todos. */
+.lf-acc svg,.lf-top svg,button svg,.btn svg{width:16px;height:16px;flex:0 0 auto}
+
+/* 3 · EL BUSCADOR Y LOS BOTONES DE ICONO DE LA BARRA. */
+.cmdk-lanzar{
+  display:flex;align-items:center;gap:9px;
+  background:var(--lf-sup);border:1px solid var(--lf-linea);border-radius:999px;
+  padding:7px 11px 7px 14px;color:var(--lf-tinta-3);font:inherit;font-size:13.5px;
+  cursor:pointer;min-width:230px;
+  transition:border-color var(--t) var(--e),box-shadow var(--t) var(--e)}
+.cmdk-lanzar:hover{border-color:var(--lf-linea-f);box-shadow:0 2px 10px #1918140d}
+.cmdk-lanzar span{flex:1;text-align:left}
+.cmdk-lanzar kbd,kbd{font:inherit;font-size:10.5px;font-weight:600;
+  color:var(--lf-tinta-4);background:var(--lf-sup-2);padding:2px 6px;border-radius:5px}
+@media(max-width:720px){.cmdk-lanzar{min-width:0;padding:8px}
+  .cmdk-lanzar span,.cmdk-lanzar kbd{display:none}}
+
+.lf-tema,.lf-campana-bt,.lf-acc > button:not(.cmdk-lanzar):not(.btn){
+  width:34px;height:34px;border-radius:9px;border:1px solid transparent;
+  background:transparent;color:var(--lf-tinta-3);cursor:pointer;
+  display:grid;place-items:center;
+  transition:background var(--t) var(--e),color var(--t) var(--e)}
+.lf-tema:hover,.lf-campana-bt:hover,
+.lf-acc > button:not(.cmdk-lanzar):not(.btn):hover{
+  background:var(--lf-sup-2);color:var(--lf-tinta)}
+
+/* 4 · EL ICONO DEL TÍTULO.
+   El saludo no necesita un símbolo delante: «⊞ Buenas tardes» no
+   significa nada. Se oculta aquí y no en el markup para no tocar las 30
+   pantallas que lo pasan. */
+.lf-top-tit h1 svg{display:none}
+.lf-top-tit h1 span{display:inline}
+
+/* La barra de arriba, pegada y con el fondo del papel para que al rodar
+   el contenido no se vea pasar por debajo del título. */
+.lf-top{align-items:center}
+.lf-top-tit h1{font-size:25px}
+
+/* 5 · El menú llega al final. Antes la última sección quedaba cortada
+   porque el contenedor no reservaba sitio para el pie. */
+.lf-side{padding-bottom:16px}
+.lf-nav{flex:0 0 auto}

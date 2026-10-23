@@ -43,6 +43,12 @@ $enPalabras = function ($fecha) {
     <h2>Embudo</h2>
     <span class="hy-tot">En juego <b><?= D::pesos((float)$enJuego) ?></b></span>
   </div>
+  <?php if ($maxM <= 0): ?>
+    <?php /* Sin dinero en ninguna etapa, el embudo serían cuatro barras
+       iguales al mínimo: una forma que miente. Mejor decirlo. */ ?>
+    <p class="hy-sinembudo">Todavía no hay prospectos con valor estimado.
+      En cuanto registres el primero, aquí verás dónde se está quedando el dinero.</p>
+  <?php else: ?>
   <div class="hy-flujo">
     <?php $i = 0; foreach ($porEtapa as $k => $e):
             $alt = $maxM > 0 ? max(18, round($e['monto'] / $maxM * 100)) : 18; ?>
@@ -57,6 +63,7 @@ $enPalabras = function ($fecha) {
       </a>
     <?php endforeach ?>
   </div>
+  <?php endif ?>
 </section>
 
 <?php /* ── LO QUE TE ESTÁ ESPERANDO ──
@@ -141,6 +148,9 @@ $enPalabras = function ($fecha) {
 .hy-tot{margin-left:auto;font-size:13px;color:var(--lf-tinta-3)}
 .hy-tot b{color:var(--lf-tinta);font-size:17px;font-weight:650;letter-spacing:-.025em}
 
+.hy-sinembudo{color:var(--lf-tinta-3);font-size:13.5px;padding:18px 20px;
+  background:var(--lf-sup);border:1px dashed var(--lf-linea-f);border-radius:13px;
+  max-width:620px;line-height:1.55}
 .hy-flujo{display:flex;align-items:stretch;gap:5px;height:120px}
 .hy-tramo{flex:1;display:flex;flex-direction:column;justify-content:flex-end;
   text-decoration:none;color:inherit}
