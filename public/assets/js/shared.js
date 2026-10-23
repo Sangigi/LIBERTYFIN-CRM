@@ -258,16 +258,16 @@ document.addEventListener('DOMContentLoaded', initShared);
    La clase se pone en <html> lo antes posible: hacerlo al cargar del
    todo se vería como un salto del menú en cada página. */
 (function () {
-  var LLAVE = 'lf-menu-angosto';
+  var LLAVE = 'lf-menu-ancho';
   try {
-    if (localStorage.getItem(LLAVE) === '1') document.documentElement.classList.add('angosta');
+    if (localStorage.getItem(LLAVE) === '1') document.documentElement.classList.add('menu-ancho');
   } catch (e) { /* navegación privada: se queda ancho, que es el defecto */ }
 
   document.addEventListener('DOMContentLoaded', function () {
     var b = document.getElementById('lfAngosta');
     if (!b) return;
     b.addEventListener('click', function () {
-      var ahora = document.documentElement.classList.toggle('angosta');
+      var ahora = document.documentElement.classList.toggle('menu-ancho');
       try { localStorage.setItem(LLAVE, ahora ? '1' : '0'); } catch (e) {}
     });
   });

@@ -96,7 +96,7 @@
   animation:crmPunto var(--crm-t-l) var(--crm-ease-s) forwards;
 }
 @keyframes crmPunto{ to{ transform:translateY(-50%) scale(1); } }
-html.angosta .lf-nav a.on::after{ display:none; }
+
 
 /* El menú sin borde derecho: lo separa el color del lienzo, no una
    línea. Una línea más es una línea que el ojo tiene que saltar. */
@@ -227,61 +227,87 @@ html.angosta .lf-nav a.on::after{ display:none; }
   --lf-head-h:54px;
 }
 
-/* ── La columna ── */
+/* ── La columna ──
+   NO se expande al pasar el ratón. Lo intenté y estaba mal: al abrirse
+   a 236px pasaba por encima de un contenido que empieza en 66px, y los
+   títulos salían cortados. Un menú que tapa lo que estás leyendo no es
+   un menú que se abre: es un fallo.
+
+   Queda como barra fija de iconos. Para ver los nombres está el botón
+   de abajo, que la CLAVA abierta y empuja el contenido: las dos cosas
+   leen la misma variable, así que nunca se solapan. */
 .lf-side{
   position:fixed; top:0; left:0; bottom:0; z-index:50;
-  width:var(--crm-rail);
+  width:var(--lf-side-w);
   background:var(--crm-oscuro);
   border:none; border-radius:0;
-  padding:0; overflow:visible;
-  transition:width .26s var(--crm-ease);
-  will-change:width;
+  padding:0; overflow:hidden;
+  transition:width .24s var(--crm-ease);
 }
-/* Se abre al acercarse, y vuelve sola. Sin clic: un menú que hay que
-   abrir y cerrar a mano se queda abierto, y entonces es un menú ancho. */
-.lf-side:hover,
-.lf-side:focus-within{ width:var(--crm-rail-abierto); box-shadow:var(--crm-e3); }
 
-/* Quien prefiera tenerlo fijo abierto usa el botón de siempre: la clase
-   `angosta` ahora significa «clavado estrecho», sin apertura al pasar. */
-html.angosta .lf-side:hover,
-html.angosta .lf-side:focus-within{ width:var(--crm-rail); box-shadow:none; }
-
-/* El contenido NO se mueve cuando el menú se abre: el menú pasa por
-   encima. Empujar la página entera para leer un nombre es la razón por
-   la que los menús que se expanden suelen molestar. */
+/* El contenido empieza justo donde acaba el menú. Siempre. */
 .lf-main{
-  margin-left:var(--crm-rail);
+  margin-left:var(--lf-side-w);
   background:var(--lf-lienzo);
   border-radius:0;
   min-height:100vh; min-height:100dvh;
   display:flex; flex-direction:column;
+  transition:margin-left .24s var(--crm-ease);
 }
 
-/* ── Los textos del menú aparecen al abrirse ── */
+/* Clavado abierto. `angosta` pasó a significar lo contrario de antes,
+   así que se renombra: el botón pone `html.menu-ancho`. */
+html.menu-ancho{ --lf-side-w:var(--crm-rail-abierto); }
+
+/* ── Los textos ──
+   Se esconden de verdad cuando la barra está estrecha: dejarlos con
+   `opacity:0` hacía que al pasar el ratón sobre un hueco vacío se
+   seleccionara texto invisible. */
 .lf-side .lf-nav a > span,
 .lf-side .sec,
 .lf-side .lf-marca > span:not(.g),
 .lf-side .lf-ucard b,
 .lf-side .lf-ucard small,
-.lf-side .lf-ang-txt{
-  opacity:0; transform:translateX(-6px);
-  transition:opacity .18s var(--crm-ease), transform .22s var(--crm-ease);
-  white-space:nowrap;
-}
-.lf-side:hover .lf-nav a > span,
-.lf-side:hover .sec,
-.lf-side:hover .lf-marca > span:not(.g),
-.lf-side:hover .lf-ucard b,
-.lf-side:hover .lf-ucard small,
-.lf-side:hover .lf-ang-txt,
-.lf-side:focus-within .lf-nav a > span,
-.lf-side:focus-within .sec{ opacity:1; transform:none; }
+.lf-side .lf-ang-txt{ display:none; }
 
-html.angosta .lf-side:hover .lf-nav a > span,
-html.angosta .lf-side:hover .sec,
-html.angosta .lf-side:hover .lf-ucard b,
-html.angosta .lf-side:hover .lf-ucard small{ opacity:0; }
+html.menu-ancho .lf-side .lf-nav a > span,
+html.menu-ancho .lf-side .sec,
+html.menu-ancho .lf-side .lf-marca > span:not(.g),
+html.menu-ancho .lf-side .lf-ucard b,
+html.menu-ancho .lf-side .lf-ucard small,
+html.menu-ancho .lf-side .lf-ang-txt{
+  display:block; white-space:nowrap;
+  animation:crmTexto .22s var(--crm-ease) both;
+}
+@keyframes crmTexto{ from{opacity:0;transform:translateX(-4px)} to{opacity:1;transform:none} }
+
+/* Estrecha: todo centrado y el nombre flotante al pasar. */
+.lf-side .lf-nav a{ justify-content:center; padding-left:0; padding-right:0; margin:2px 9px; }
+html.menu-ancho .lf-side .lf-nav a{ justify-content:flex-start; padding-left:16px; }
+
+.lf-side .lf-nav a::after{ content:none; }
+/* El nombre al pasar el ratón, estando estrecha. Sin esto hay que
+   aprenderse quince iconos, y eso es trabajo del usuario que no tendría
+   que existir. Se dibuja con un segundo pseudo-elemento para no pelearse
+   con el fondo de la pastilla activa. */
+html:not(.menu-ancho) .lf-side .lf-nav a::after{
+  content:attr(title);
+  position:absolute; left:calc(100% + 12px); top:50%;
+  transform:translateY(-50%) translateX(-4px);
+  background:var(--crm-oscuro-2); color:#e9efec;
+  padding:6px 11px; border-radius:8px; font-size:12.5px; font-weight:500;
+  white-space:nowrap; pointer-events:none; z-index:60;
+  box-shadow:0 4px 16px rgba(0,0,0,.3);
+  opacity:0; transition:opacity .14s var(--crm-ease), transform .18s var(--crm-ease);
+}
+html:not(.menu-ancho) .lf-side .lf-nav a:hover::after,
+html:not(.menu-ancho) .lf-side .lf-nav a:focus-visible::after{
+  opacity:1; transform:translateY(-50%);
+}
+/* La barra de la sección activa se dibuja aparte, porque ::after ya está
+   ocupado por el nombre flotante. */
+.lf-side .lf-nav a.on{ box-shadow:inset 3px 0 0 var(--lf-brand); }
+html:not(.menu-ancho) .lf-side{ overflow:visible; }
 
 /* ── Sobre oscuro, los colores cambian ── */
 .lf-side .lf-nav a{
@@ -305,7 +331,7 @@ html.angosta .lf-side:hover .lf-ucard small{ opacity:0; }
   animation:crmMarca .3s var(--crm-ease-s) forwards;
 }
 @keyframes crmMarca{ to{ transform:translateY(-50%) scaleY(1); } }
-html.angosta .lf-side .lf-nav a.on::after{ display:block; }
+
 
 .lf-side .sec{ color:#5e716a; font-size:10.5px; letter-spacing:.08em; padding-left:24px; }
 .lf-side .lf-marca{ padding:16px 0 14px 20px; }
@@ -321,8 +347,7 @@ html.angosta .lf-side .lf-nav a.on::after{ display:block; }
 .lf-side .lf-angosta{ color:#7d8f88; border-top-color:rgba(255,255,255,.08); padding-left:24px; }
 .lf-side .lf-angosta:hover{ color:#fff; }
 
-/* El nombre flotante del icono ya no hace falta: el menú se abre solo. */
-html.angosta .lf-nav a::after{ content:none; }
+
 
 /* ── La barra de arriba: una franja, no un encabezado ── */
 .lf-top{
@@ -458,3 +483,86 @@ small,.pz-asunto,.pz-resp,.pz-notas small{ letter-spacing:.005em; }
 /* La selección, en la marca. Es un detalle de dos líneas que casi nadie
    pone, y se nota cuando está. */
 ::selection{ background:color-mix(in srgb, var(--lf-brand) 26%, transparent); }
+
+/* ════════════════════════════════════════════════════════
+   EL CONTENIDO
+   ════════════════════════════════════════════════════════
+   El chasis ya es otro, pero dentro seguían las mismas tarjetas blancas
+   muy redondeadas con sombra difusa y las mismas pestañas de pastilla
+   verde. Eso es lo que hace que dos capturas se confundan: el 80% de la
+   pantalla es contenido, no menú.
+
+   La regla aquí es una sola: SUPERFICIE PLANA, SEPARACIÓN POR LÍNEA.
+   El POS apila tarjetas que flotan; esto dibuja regiones que se tocan.
+   Es la diferencia entre un panel de administración genérico y una
+   herramienta de trabajo. */
+
+.card,.stat-card{
+  border-radius:var(--lf-r-sm);
+  box-shadow:none;
+  border:1px solid var(--lf-linea);
+  background:var(--lf-sup);
+  transition:border-color .16s var(--crm-ease);
+}
+.card:hover{ box-shadow:none; border-color:var(--lf-linea-f); }
+
+/* Las pestañas: subrayado, no pastilla.
+   La pastilla verde rellena es el patrón de LibertyFin POS y de otros
+   mil paneles. Un subrayado de 2px dice lo mismo, pesa menos y deja que
+   el verde sirva para lo que importa: las acciones. */
+.nav-pills .nav-link,.lf-tabs a,.lf-pestanas a{
+  background:transparent !important; color:var(--lf-tinta-3);
+  border-radius:0; padding:9px 2px; margin-right:22px;
+  font-weight:500; font-size:13.5px;
+  box-shadow:inset 0 -2px 0 transparent;
+  transition:color .16s var(--crm-ease), box-shadow .16s var(--crm-ease);
+}
+.nav-pills .nav-link:hover,.lf-tabs a:hover,.lf-pestanas a:hover{
+  color:var(--lf-tinta); box-shadow:inset 0 -2px 0 var(--lf-linea-f);
+}
+.nav-pills .nav-link.active,.lf-tabs a.on,.lf-pestanas a.on,
+.nav-pills .nav-link[aria-selected="true"]{
+  color:var(--lf-tinta) !important; font-weight:600;
+  box-shadow:inset 0 -2px 0 var(--lf-brand);
+}
+
+/* Los avisos: una línea de color a la izquierda sobre fondo casi
+   blanco. El bloque relleno de color ocupa media pantalla para decir
+   una frase. */
+.alert{
+  border:1px solid var(--lf-linea); border-left:3px solid var(--lf-brand);
+  border-radius:var(--lf-r-xs); background:var(--lf-sup);
+  padding:12px 16px; font-size:13.5px; box-shadow:none;
+}
+.alert-warning{ border-left-color:var(--lf-amb); }
+.alert-danger{ border-left-color:var(--lf-rojo); }
+.alert-info{ border-left-color:var(--lf-info); }
+
+/* Los botones secundarios, sin relleno. Una pantalla con seis botones
+   grises rellenos se ve como un formulario de hace quince años. */
+.btn:not(.btn-primary):not(.btn-danger){
+  background:transparent; border:1px solid var(--lf-linea-f);
+  color:var(--lf-tinta-2); font-weight:500;
+}
+.btn:not(.btn-primary):not(.btn-danger):hover{
+  background:var(--lf-sup-2); border-color:var(--lf-tinta-4); color:var(--lf-tinta);
+}
+.btn{ border-radius:var(--lf-r-xs); font-size:13.5px; padding:8px 15px; }
+.btn-sm{ font-size:12.5px; padding:6px 12px; }
+
+/* Los campos de archivo no desbordan.
+   En la captura salía «Sin arch…ionados» cortado a la mitad: el control
+   nativo no cabía y el navegador lo recortó por el centro. */
+input[type="file"]{ max-width:100%; font-size:12.5px; }
+.card input[type="file"]{ display:block; width:100%; margin-bottom:8px; }
+
+/* Las tarjetas de una rejilla, a la misma altura. En la captura unas
+   eran más altas que otras según la longitud del título. */
+.lf-rejilla,.row{ align-items:stretch; }
+.card{ display:flex; flex-direction:column; }
+.card > :last-child{ margin-top:auto; }
+
+/* La flecha del botón apunta a donde va a pasar: abre a la derecha,
+   cierra a la izquierda. */
+.lf-ang-ico{ transition:transform .22s var(--crm-ease); }
+html.menu-ancho .lf-ang-ico{ transform:rotate(180deg); }

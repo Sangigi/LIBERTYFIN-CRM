@@ -170,7 +170,7 @@ foreach ($menu as $m) {
      sistema todavía necesita leer los nombres. */ ?>
   <button type="button" class="lf-angosta" id="lfAngosta"
           title="Ancho del menú" aria-label="Cambiar ancho del menú">
-    <span class="lf-ang-ico">&#8249;</span><span class="lf-ang-txt">Menú estrecho</span>
+    <span class="lf-ang-ico">&#8250;</span><span class="lf-ang-txt">Ocultar nombres</span>
   </button>
 
   <div class="lf-pie">
