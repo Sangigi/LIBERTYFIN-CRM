@@ -158,17 +158,26 @@ $lfQuien = \LibertyFin\Controlador\PushControlador::quien(\LibertyFin\Servicio\S
       $enPlan = strpos($_SERVER['REQUEST_URI'] ?? '', '/cuenta') === 0
              && strpos($_SERVER['REQUEST_URI'] ?? '', 't=plan') !== false;
       if ($aboSus && !$enPlan): $vencida = $aboSus['dias'] < 0; ?>
-        <a class="alert alert-<?= $vencida ? 'danger' : 'warning' ?> lf-aviso-plan"
-           href="/cuenta?t=plan">
-          <?= W::icono('alerta','18px') ?>
-          <span><b><?= $vencida
-              ? 'Tu suscripción venció el ' . P::e($aboSus['fecha']) . '.'
-              : ($aboSus['dias'] === 0 ? 'Tu suscripción vence hoy.'
-                 : 'Tu suscripción vence en ' . $aboSus['dias'] . ' día' . ($aboSus['dias'] === 1 ? '' : 's')
-                   . ' (' . P::e($aboSus['fecha']) . ').') ?></b>
-            <?= $vencida ? 'Renueva para no perder el acceso.' : 'Renueva a tiempo para no perder el acceso.' ?>
-            <u>Renovar ahora</u></span>
-        </a>
+        <?php /* El aviso de renovación.
+           Antes era una franja de ancho completo con el texto corrido y
+           el enlace subrayado al final: ocupaba un renglón entero de la
+           pantalla para decir algo que se lee en dos segundos, y el
+           subrayado parecía un error de maquetado.
+           Ahora es una tarjeta compacta: los días que quedan como dato
+           grande, la explicación en pequeño, y un botón de verdad. */ ?>
+        <div class="lf-plan<?= $vencida ? ' venció' : '' ?>">
+          <span class="lf-plan-n"><?= $vencida ? '!' : (int)$aboSus['dias'] ?></span>
+          <span class="lf-plan-t">
+            <b><?= $vencida
+                ? 'Tu suscripción venció'
+                : ($aboSus['dias'] === 0 ? 'Tu suscripción vence hoy'
+                   : 'Quedan ' . $aboSus['dias'] . ' día' . ($aboSus['dias'] === 1 ? '' : 's') . ' de suscripción') ?></b>
+            <small><?= $vencida
+                ? 'Venció el ' . P::e($aboSus['fecha']) . '. Renueva para recuperar el acceso.'
+                : 'Hasta el ' . P::e($aboSus['fecha']) . '. Renueva antes para no perder el acceso.' ?></small>
+          </span>
+          <a class="btn btn-primary btn-sm" href="/cuenta?t=plan">Renovar</a>
+        </div>
       <?php endif; ?>
       <?= $contenido ?></div>
   </div>

@@ -57,7 +57,7 @@ $enPalabras = function ($fecha) {
          calcularlo: el resultado es cero y el embudo sale sin barras.
          Con el alto fijo (104px de los 120 del canal, menos el pie) el
          cálculo es nuestro y no depende de cómo resuelva el flex. */
-      $ALTO = 72;
+      $ALTO = 58;
       $i = 0; foreach ($porEtapa as $k => $e):
             $alt = $maxM > 0 ? max(16, (int)round($e['monto'] / $maxM * $ALTO)) : 16; ?>
       <a class="hy-tramo" href="/prospectos" title="<?= P::e($etapas[$k] ?? $k) ?>">

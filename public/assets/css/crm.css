@@ -555,8 +555,12 @@ dialog::backdrop{background:#1918145e;backdrop-filter:blur(2px)}
    Cuatro barras a todo lo ancho de una pantalla de 1900px se leen como
    un banner, no como un gráfico. Con un ancho máximo recuperan
    proporción y el ojo las compara de una mirada. */
-.hy-flujo{max-width:760px}
-.hy-embudo .hy-eh{max-width:760px}
+/* El embudo ocupa el ancho del contenido, alineado con todo lo demás.
+   Acotarlo a 760px lo dejaba arrinconado a la izquierda, con la mitad
+   de la pantalla vacía al lado. Lo que molestaba no era el ancho: era
+   el alto, que lo hacía parecer un banner. Ahora las barras son más
+   bajas y la proporción vuelve a leerse como un gráfico. */
+.hy-flujo,.hy-embudo .hy-eh{max-width:none}
 
 /* ════════════════════════════════════════════════════════
    8 · AGENDA
@@ -640,3 +644,78 @@ details.lf-alta,details.lf-blq,.lf-main details{
 
 /* ── Ficha del prospecto: el estado no se pinta sobre el verde ── */
 .pz-panel .badge,.lf-cont .badge{max-width:100%}
+
+/* ── El botón de tema no era un círculo ──
+   Era un óvalo: heredaba el ancho de `.lf-tema` (34px) y lo estiraba
+   el contenido, porque nada le impedía crecer. Con las tres medidas
+   fijas y `padding:0` no puede deformarse. */
+.lf-tema-flota{
+  width:42px;height:42px;min-width:42px;max-width:42px;
+  padding:0;border-radius:50%;flex:0 0 auto;
+}
+.lf-tema-flota svg{width:18px;height:18px}
+.lf-tema-flota span{display:flex;align-items:center;justify-content:center}
+
+/* ── El aviso de renovación ──
+   Era una franja de ancho completo con el texto corrido y un enlace
+   subrayado al final: ocupaba un renglón entero de la pantalla y el
+   subrayado parecía un error de maquetado.
+   Ahora es una tarjeta compacta que no estorba: los días como dato
+   grande a la izquierda, la explicación en pequeño, y un botón. */
+.lf-plan{
+  display:flex;align-items:center;gap:16px;
+  background:var(--lf-sup);border:1px solid var(--lf-linea);
+  border-radius:var(--r);padding:14px 18px;margin-bottom:20px;
+  max-width:560px;
+}
+.lf-plan-n{
+  width:44px;height:44px;flex:0 0 auto;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(184,121,28,.14);color:var(--lf-amb);
+  font-size:19px;font-weight:650;letter-spacing:-.03em;line-height:1;
+}
+.lf-plan-t{flex:1;min-width:0;line-height:1.35}
+.lf-plan-t b{display:block;font-size:14px;font-weight:600;letter-spacing:-.015em}
+.lf-plan-t small{color:var(--lf-tinta-3);font-size:12.5px}
+.lf-plan .btn{flex:0 0 auto}
+/* Vencida: el mismo bloque en rojo. Un diseño distinto para el caso
+   grave obliga a volver a leerlo todo; el mismo en otro color se
+   entiende de un vistazo. */
+.lf-plan.venció{border-color:rgba(188,66,55,.35)}
+.lf-plan.venció .lf-plan-n{background:rgba(188,66,55,.13);color:var(--lf-rojo)}
+@media(max-width:620px){
+  .lf-plan{flex-wrap:wrap;max-width:none}
+  .lf-plan .btn{width:100%}
+}
+
+/* El botón de tema, con las medidas blindadas.
+   Seguía saliendo ovalado: algo lo estiraba a lo ancho y le comía el
+   alto. Con `box-sizing`, `padding:0`, las tres medidas fijas y un
+   selector que incluye el elemento, ninguna otra regla puede ganarle
+   sin ser todavía más específica. */
+button.lf-tema.lf-tema-flota{
+  box-sizing:border-box;
+  width:42px !important; height:42px !important;
+  min-width:42px; max-width:42px; min-height:42px; max-height:42px;
+  padding:0; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  line-height:0; overflow:hidden;
+}
+/* OJO CON LA ESPECIFICIDAD.
+   Esta regla de tamaño llevaba `display:flex` y, al ser más específica
+   que la que esconde el icono sobrante, los sacaba otra vez los dos. El
+   tamaño va aquí; qué icono se ve, abajo, con selectores del mismo
+   peso. Dos reglas peleándose por `display` es como vuelve un fallo que
+   ya se había arreglado. */
+button.lf-tema.lf-tema-flota > span{
+  align-items:center;justify-content:center;width:18px;height:18px}
+button.lf-tema.lf-tema-flota svg{width:18px;height:18px;display:block}
+
+button.lf-tema.lf-tema-flota > span.claro{display:flex}
+button.lf-tema.lf-tema-flota > span.oscuro{display:none}
+[data-theme="dark"] button.lf-tema.lf-tema-flota > span.claro{display:none}
+[data-theme="dark"] button.lf-tema.lf-tema-flota > span.oscuro{display:flex}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) button.lf-tema.lf-tema-flota > span.claro{display:none}
+  :root:not([data-theme="light"]) button.lf-tema.lf-tema-flota > span.oscuro{display:flex}
+}
