@@ -12,7 +12,12 @@ use LibertyFin\Vista\Plantilla as P;
 ?>
 <header class="lf-top">
   <div class="lf-top-tit">
-    <h1><?= W::icono($icono, '18px') ?><span><?= P::e($titulo) ?></span></h1>
+    <?php /* El título va SIN icono. «⊞ Buenas tardes» no significa nada:
+       un símbolo delante de un texto que ya se explica solo es ruido, y
+       además compite con el icono de la sección activa en el menú, que
+       sí dice dónde estás. $icono se sigue recibiendo porque 30
+       pantallas lo mandan, pero no se pinta. */ ?>
+    <h1><span><?= P::e($titulo) ?></span></h1>
     <?php if ($subtitulo): ?><p><?= P::e($subtitulo) ?></p><?php endif; ?>
   </div>
 

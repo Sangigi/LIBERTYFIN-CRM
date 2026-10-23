@@ -50,10 +50,18 @@ $enPalabras = function ($fecha) {
       En cuanto registres el primero, aquí verás dónde se está quedando el dinero.</p>
   <?php else: ?>
   <div class="hy-flujo">
-    <?php $i = 0; foreach ($porEtapa as $k => $e):
-            $alt = $maxM > 0 ? max(18, round($e['monto'] / $maxM * 100)) : 18; ?>
+    <?php
+      /* La altura va en PÍXELES, no en porcentaje.
+         Un `height:36%` se mide contra el padre, y cuando el padre es un
+         hijo flex sin altura propia el navegador no tiene contra qué
+         calcularlo: el resultado es cero y el embudo sale sin barras.
+         Con el alto fijo (104px de los 120 del canal, menos el pie) el
+         cálculo es nuestro y no depende de cómo resuelva el flex. */
+      $ALTO = 104;
+      $i = 0; foreach ($porEtapa as $k => $e):
+            $alt = $maxM > 0 ? max(20, (int)round($e['monto'] / $maxM * $ALTO)) : 20; ?>
       <a class="hy-tramo" href="/prospectos" title="<?= P::e($etapas[$k] ?? $k) ?>">
-        <span class="hy-cuerpo" style="height:<?= $alt ?>%;background:<?= $col[$k] ?? '#b4b0a6' ?>;
+        <span class="hy-cuerpo" style="height:<?= $alt ?>px;background:<?= $col[$k] ?? '#b4b0a6' ?>;
               animation-delay:<?= $i++ * 70 ?>ms"></span>
         <span class="hy-pie">
           <b><?= P::e($etapas[$k] ?? $k) ?></b>
@@ -151,10 +159,17 @@ $enPalabras = function ($fecha) {
 .hy-sinembudo{color:var(--lf-tinta-3);font-size:13.5px;padding:18px 20px;
   background:var(--lf-sup);border:1px dashed var(--lf-linea-f);border-radius:13px;
   max-width:620px;line-height:1.55}
-.hy-flujo{display:flex;align-items:stretch;gap:5px;height:120px}
-.hy-tramo{flex:1;display:flex;flex-direction:column;justify-content:flex-end;
+/* Sin `height` en el canal: la altura la pone el tramo más alto más su
+   pie. Fijarla obligaba a los hijos a calcular porcentajes contra ella,
+   que es justo lo que fallaba. */
+.hy-flujo{display:flex;align-items:flex-end;gap:5px}
+.hy-tramo{flex:1 1 0;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;
   text-decoration:none;color:inherit}
-.hy-cuerpo{border-radius:10px 10px 4px 4px;transform-origin:bottom;
+/* `display:block` NO es decorativo aquí: el tramo es un <span>, y a un
+   elemento en línea el navegador le ignora la altura. Sin esto el
+   embudo sale sin barras y solo quedan las etiquetas, que es
+   exactamente lo que pasó la primera vez que se montó. */
+.hy-cuerpo{display:block;width:100%;border-radius:10px 10px 4px 4px;transform-origin:bottom;
   animation:hyCrece .55s var(--crm-e) both;transition:opacity .16s var(--crm-e)}
 @keyframes hyCrece{from{transform:scaleY(.05);opacity:.25}to{transform:scaleY(1);opacity:1}}
 .hy-tramo:hover .hy-cuerpo{opacity:.82}
