@@ -18,10 +18,18 @@ $colorEtapa = ($colores ?? []) + [
     'cita'       => '#6366f1',
     'propuesta'  => '#8b5cf6',
 ];
-$iconoOrigen = [
-    'whatsapp' => '💬', 'instagram' => '📷', 'facebook' => '👤',
-    'tiktok'   => '🎵', 'linkedin'  => '💼', 'google'   => '🔍',
-    'web'      => '🌐', 'referido'  => '🤝', 'llamada'  => '📞', 'manual' => '✍️',
+/* El canal, como marca de color y no como emoji.
+   Los emoji los dibuja cada sistema a su manera —en Windows uno, en Mac
+   otro, en Android otro— así que la misma pantalla se ve distinta en
+   cada equipo, y casi siempre peor de lo previsto. Un punto del color
+   de la plataforma se ve igual en todas partes, ocupa menos y no
+   compite con el nombre del lead, que es lo que hay que leer.
+   El nombre del canal va en el `title`, para quien lo necesite. */
+$colorOrigen = [
+    'whatsapp'  => '#25d366', 'instagram' => '#e1306c', 'facebook' => '#1877f2',
+    'tiktok'    => '#010101', 'linkedin'  => '#0a66c2', 'google'   => '#ea4335',
+    'web'       => '#64748b', 'referido'  => '#8b5cf6', 'llamada'  => '#0ea5e9',
+    'manual'    => '#94a3b8',
 ];
 ?>
 
@@ -87,9 +95,8 @@ $iconoOrigen = [
           <?php endif ?>
 
           <footer>
-            <span class="pz-sem" title="<?= P::e($semaforos[$p['semaforo']] ?? '') ?>"></span>
-            <span class="pz-canal" title="<?= P::e($origenes[$p['origen']] ?? $p['origen']) ?>">
-              <?= $iconoOrigen[$p['origen']] ?? '•' ?></span>
+            <span class="pz-canal" title="<?= P::e($origenes[$p['origen']] ?? $p['origen']) ?>"
+                  style="--o:<?= $colorOrigen[$p['origen']] ?? '#94a3b8' ?>"></span>
             <span class="pz-resp"><?= $p['responsable']
                  ? P::e($p['responsable']) : '<em>sin asignar</em>' ?></span>
           </footer>
@@ -258,7 +265,8 @@ $iconoOrigen = [
   transition:color .14s var(--crm-ease)}
 .pz-nom:hover{color:var(--lf-brand-2)}
 .pz-asunto{font-size:12px;color:var(--lf-tinta-3);margin-top:2px;line-height:1.35}
-.pz-val{font-size:12.5px;font-weight:650;margin-top:5px;letter-spacing:-.01em}
+.pz-val{font-size:12.5px;font-weight:600;margin-top:5px;letter-spacing:-.015em;
+  font-variant-numeric:tabular-nums}
 
 /* La tarea: una pastilla, no una línea de texto. Lo vencido se nota sin
    leerlo. */
@@ -274,11 +282,16 @@ $iconoOrigen = [
   padding-top:8px;box-shadow:inset 0 1px 0 var(--lf-linea);font-size:11px}
 .pz-resp{color:var(--lf-tinta-4);flex:1;overflow:hidden;text-overflow:ellipsis;
   white-space:nowrap}
-.pz-canal{font-size:13px;line-height:1}
+.pz-canal{width:7px;height:7px;border-radius:50%;background:var(--o);flex:0 0 auto}
 /* El semáforo, al final y como punto. */
-.pz-sem{width:7px;height:7px;border-radius:50%;background:var(--lf-brand);flex:0 0 auto}
-.pz-tar.s-amarillo .pz-sem{background:var(--lf-amb)}
-.pz-tar.s-rojo .pz-sem{background:var(--lf-rojo)}
+/* El semáforo NO es otro punto. Dos puntos juntos en el pie se leen
+   como adorno, no como información. Lo que marca el estado del trato es
+   una línea bajo el nombre: está donde ya se está mirando. */
+.pz-tar.s-amarillo .pz-nom,
+.pz-tar.s-rojo .pz-nom{padding-bottom:3px;box-shadow:inset 0 -2px 0 var(--sem)}
+.pz-tar.s-amarillo{--sem:var(--lf-amb)}
+.pz-tar.s-rojo{--sem:var(--lf-rojo)}
+.pz-tar.s-rojo .pz-nom{color:var(--lf-tinta-3)}
 
 .pz-vacio{font-size:11px;color:var(--lf-tinta-4);text-align:center;margin:auto;
   padding:14px;transition:color .18s var(--crm-ease)}
@@ -294,8 +307,8 @@ $iconoOrigen = [
 .pz-barra{display:flex;justify-content:space-between;align-items:center;gap:16px;
   flex-wrap:wrap;margin-bottom:16px}
 .pz-cifras{display:flex;gap:22px;flex-wrap:wrap;font-size:12.5px;color:var(--lf-tinta-4)}
-.pz-cifras b{color:var(--lf-tinta);font-size:17px;font-weight:650;
-  letter-spacing:-.02em;margin-right:4px}
+.pz-cifras b{color:var(--lf-tinta);font-size:19px;font-weight:600;
+  letter-spacing:-.03em;margin-right:5px;font-variant-numeric:tabular-nums}
 .pz-cifras .ok b{color:var(--lf-brand)}
 .pz-cifras .urge b{color:var(--lf-rojo)}
 

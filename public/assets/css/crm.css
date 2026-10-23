@@ -39,9 +39,13 @@
 
   /* Elevación en vez de contorno. Sombras muy abiertas y muy tenues:
      se notan sin que se vean. */
-  --crm-e1:0 1px 2px rgba(16,32,24,.05), 0 2px 10px rgba(16,32,24,.04);
-  --crm-e2:0 2px 6px rgba(16,32,24,.07), 0 10px 26px rgba(16,32,24,.07);
-  --crm-e3:0 8px 20px rgba(16,32,24,.1), 0 28px 60px rgba(16,32,24,.12);
+  /* Contorno de un píxel + una sombra mínima. Una sombra grande y
+     difusa es lo que hace que una interfaz parezca una plantilla
+     comprada: imita profundidad sin que nada esté realmente encima de
+     nada. El contorno define; la sombra solo despega. */
+  --crm-e1:0 0 0 1px var(--lf-linea);
+  --crm-e2:0 0 0 1px var(--lf-linea-f), 0 2px 8px rgba(16,32,24,.06);
+  --crm-e3:0 0 0 1px var(--lf-linea-f), 0 16px 48px rgba(16,32,24,.14);
 
   /* Más redondo y más aire que el POS. */
   --lf-r-xs:9px; --lf-r-sm:12px; --lf-r:16px; --lf-r-lg:22px; --lf-r-panel:28px;
@@ -356,23 +360,17 @@ html.angosta .lf-nav a::after{ content:none; }
    LA CAPA DE MOVIMIENTO (va con crm-movimiento.js)
    ════════════════════════════════════════════════════════ */
 
-/* ── La onda al pulsar ── */
-.crm-onda{
-  position:absolute; border-radius:50%; pointer-events:none;
-  background:currentColor; opacity:.18; transform:scale(0);
-  animation:crmOnda .55s var(--crm-ease) forwards;
-}
-@keyframes crmOnda{ to{ transform:scale(1); opacity:0; } }
-
 /* ── Lo que aparece al bajar ──
-   El estado de partida va en CSS y no en JS: si el script tarda, el
-   contenido se ve igual, solo sin animar. Al revés —esconderlo con JS—
-   dejaría la página en blanco mientras carga. */
+   SIEMPRE TERMINA VISIBLE, pase lo que pase con el JS.
+   Antes el estado de partida era `opacity:0` y solo el observador lo
+   quitaba: si el elemento era más alto que la pantalla, el umbral nunca
+   se cumplía y la sección se quedaba invisible para siempre. Ahora la
+   animación va sola en CSS y el JS solo escalona; si el JS no corre, se
+   ve igual. */
 .crm-aparece{
-  opacity:0; transform:translateY(14px);
-  transition:opacity .42s var(--crm-ease), transform .42s var(--crm-ease);
+  animation:crmSube .34s var(--crm-ease) both;
 }
-.crm-aparece.crm-visible{ opacity:1; transform:none; }
+@keyframes crmSube{ from{ opacity:0; transform:translateY(8px); } to{ opacity:1; transform:none; } }
 
 /* ── Los avisos flotantes ── */
 .crm-avisos{
@@ -400,11 +398,13 @@ html.angosta .lf-nav a::after{ content:none; }
                           to{ opacity:1; transform:none; } }
 @keyframes crmAvisoSale{ to{ opacity:0; transform:translateX(18px); } }
 
-/* ── El paso de una página a otra ──
-   Muy corto a propósito: 130 ms es suficiente para que el ojo no vea el
-   parpadeo en blanco, y poco para que nadie sienta que espera. */
-body{ transition:opacity .13s var(--crm-ease); }
-body.crm-saliendo{ opacity:0; }
+/* ── Por qué NO hay fundido al cambiar de página ──
+   Lo intenté y lo quité: ponía `opacity:0` al cuerpo antes de navegar, y
+   cualquier clic que no acabara en una carga nueva —una descarga, un
+   enlace a una ruta que redirige, volver con el botón de atrás— dejaba
+   la pantalla en blanco sin forma de recuperarla.
+   El parpadeo entre páginas molesta; una pantalla en blanco es un fallo.
+   No se cambia lo segundo por lo primero. */
 
 /* ── El esqueleto mientras carga ──
    Para cuando el panel lateral trae la ficha. Un hueco gris que respira
@@ -420,6 +420,41 @@ body.crm-saliendo{ opacity:0; }
 
 @media (prefers-reduced-motion: reduce){
   .crm-aparece{ opacity:1; transform:none; }
-  body.crm-saliendo{ opacity:1; }
   .crm-hueso{ animation:none; }
 }
+
+/* ════════════════════════════════════════════════════════
+   PRECISIÓN
+   ════════════════════════════════════════════════════════
+   Lo que hace que una interfaz se vea cara no son los efectos: es que
+   todo esté alineado a la misma rejilla, con los mismos pesos y los
+   mismos espacios. Lo que la hace ver barata es la inconsistencia, y
+   los efectos encima no la tapan: la subrayan. */
+
+/* Números de ancho fijo en TODO lo que es cifra. Sin esto, una columna
+   de importes baila al cambiar de 1 a 7, y ese temblor es lo primero
+   que delata una tabla mal hecha. */
+.table td, .stat-card, .pz-cifras, .pz-val, dd{ font-variant-numeric:tabular-nums; }
+
+/* Dos pesos y punto: normal y 600. Tener 500, 600 y 650 sueltos por ahí
+   es lo que hace que nada parezca decidido. */
+h1,h2,h3,h4,.pz-tit,.card h3,.lf-top-tit h1{ font-weight:600; letter-spacing:-.02em; }
+b,strong{ font-weight:600; }
+
+/* El texto pequeño, con más espacio entre letras. Por debajo de 12px,
+   el seguimiento normal se apelmaza. */
+small,.pz-asunto,.pz-resp,.pz-notas small{ letter-spacing:.005em; }
+
+/* Los títulos de tabla y de bloque, en el mismo estilo en todo el
+   sistema: una sola convención, repetida. */
+.table th,.pz-bloque h4,.lf-side .sec{
+  font-size:11px; letter-spacing:.07em; text-transform:uppercase;
+  font-weight:600; color:var(--lf-tinta-4);
+}
+
+/* Las esquinas, en una escala y no al gusto de cada pantalla. */
+.badge{ border-radius:var(--lf-r-xs); font-weight:600; letter-spacing:.01em; }
+
+/* La selección, en la marca. Es un detalle de dos líneas que casi nadie
+   pone, y se nota cuando está. */
+::selection{ background:color-mix(in srgb, var(--lf-brand) 26%, transparent); }
