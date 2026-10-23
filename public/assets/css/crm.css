@@ -93,7 +93,7 @@ hr{border:none;border-top:1px solid var(--lf-linea);margin:18px 0}
 img,svg{max-width:100%}
 ul,ol{padding-left:1.2em}
 code,.lf-mono,.tu-mono{font-family:var(--mono);font-size:.92em}
-::selection{background:color-mix(in srgb,var(--lf-brand) 24%,transparent)}
+::selection{background:rgba(75,170,92,.26)}
 :where(a,button,input,select,textarea,[tabindex]):focus-visible{
   outline:2px solid var(--lf-brand);outline-offset:2px;border-radius:var(--r-xs)}
 [hidden]{display:none!important}
@@ -155,9 +155,9 @@ html.menu-chico .lf-nav a:focus-visible::after{opacity:1;transform:translateY(-5
   text-overflow:ellipsis;white-space:nowrap}
 .lf-marca small{color:var(--lf-tinta-3);font-size:11.5px;font-weight:400}
 
-.lf-nav{display:flex;flex-direction:column;gap:2px}
+.lf-nav{display:flex;flex-direction:column;gap:3px}
 .lf-nav a{
-  position:relative;display:flex;align-items:center;gap:11px;padding:8px 10px;
+  position:relative;display:flex;align-items:center;gap:12px;padding:10px 12px;
   border-radius:9px;color:var(--lf-tinta-2);text-decoration:none;
   font-size:14px;font-weight:500;
   transition:background var(--t) var(--e),color var(--t) var(--e)}
@@ -285,7 +285,7 @@ input[type=number],input[type=date],input[type=search],input[type=tel],textarea,
   transition:border-color var(--t) var(--e),box-shadow var(--t) var(--e)}
 .form-control:focus,.form-select:focus,input:focus,textarea:focus,select:focus{
   outline:none;border-color:var(--lf-brand);
-  box-shadow:0 0 0 3px color-mix(in srgb,var(--lf-brand) 15%,transparent)}
+  box-shadow:0 0 0 3px rgba(75,170,92,.17)}
 .form-control::placeholder,textarea::placeholder{color:var(--lf-tinta-4)}
 .form-control-sm,.form-select-sm{font-size:12.5px;padding:6px 9px}
 .form-select,select{appearance:none;padding-right:30px;
@@ -325,15 +325,11 @@ input[type=checkbox],input[type=radio]{width:auto;accent-color:var(--lf-brand)}
   font-weight:600;padding:3px 9px;border-radius:var(--r-xs);
   background:var(--lf-sup-2);color:var(--lf-tinta-2)}
 .badge.bg-secondary,.bg-secondary{background:var(--lf-sup-2);color:var(--lf-tinta-2)}
-.badge.bg-success,.bg-success{background:color-mix(in srgb,var(--lf-brand) 14%,transparent);
-  color:var(--lf-brand-d)}
-.badge.bg-warning,.bg-warning{background:color-mix(in srgb,var(--lf-amb) 15%,transparent);
-  color:var(--lf-amb)}
-.badge.bg-danger,.bg-danger{background:color-mix(in srgb,var(--lf-rojo) 13%,transparent);
-  color:var(--lf-rojo)}
+.badge.bg-success,.bg-success{background:rgba(75,170,92,.15);color:var(--lf-brand-d)}
+.badge.bg-warning,.bg-warning{background:rgba(184,121,28,.16);color:var(--lf-amb)}
+.badge.bg-danger,.bg-danger{background:rgba(188,66,55,.13);color:var(--lf-rojo)}
 .badge.bg-primary,.bg-primary{background:var(--lf-brand);color:#fff}
-.badge.bg-info,.bg-info{background:color-mix(in srgb,var(--lf-info) 14%,transparent);
-  color:var(--lf-info)}
+.badge.bg-info,.bg-info{background:rgba(74,127,181,.15);color:var(--lf-info)}
 .badge.bg-dark,.bg-dark{background:var(--lf-tinta);color:var(--lf-lienzo)}
 .badge.bg-light,.bg-light{background:var(--lf-sup-2);color:var(--lf-tinta-2)}
 .lf-pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;
@@ -506,7 +502,11 @@ dialog::backdrop{background:#1918145e;backdrop-filter:blur(2px)}
 /* La barra de arriba, pegada y con el fondo del papel para que al rodar
    el contenido no se vea pasar por debajo del título. */
 .lf-top{align-items:center}
-.lf-top-tit h1{font-size:25px}
+/* 30px como el prototipo. A 25 el saludo pesaba lo mismo que un
+   encabezado de tarjeta, y la pantalla perdía su punto de entrada. */
+.lf-top-tit h1{font-size:30px;letter-spacing:-.04em}
+.lf-top-tit p{font-size:14.5px;margin-top:5px}
+.lf-top{padding:28px 32px 20px}
 
 /* 5 · El menú llega al final. Antes la última sección quedaba cortada
    porque el contenedor no reservaba sitio para el pie. */

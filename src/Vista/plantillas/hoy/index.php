@@ -41,7 +41,7 @@ $enPalabras = function ($fecha) {
 <section class="hy-embudo">
   <div class="hy-eh">
     <h2>Embudo</h2>
-    <span class="hy-tot">En juego <b><?= D::pesos((float)$enJuego) ?></b></span>
+    <span class="hy-tot">En juego <b><?= D::pesos((float)$enJuego, 0) ?></b></span>
   </div>
   <?php if ($maxM <= 0): ?>
     <?php /* Sin dinero en ninguna etapa, el embudo serían cuatro barras
@@ -57,16 +57,16 @@ $enPalabras = function ($fecha) {
          calcularlo: el resultado es cero y el embudo sale sin barras.
          Con el alto fijo (104px de los 120 del canal, menos el pie) el
          cálculo es nuestro y no depende de cómo resuelva el flex. */
-      $ALTO = 104;
+      $ALTO = 72;
       $i = 0; foreach ($porEtapa as $k => $e):
-            $alt = $maxM > 0 ? max(20, (int)round($e['monto'] / $maxM * $ALTO)) : 20; ?>
+            $alt = $maxM > 0 ? max(16, (int)round($e['monto'] / $maxM * $ALTO)) : 16; ?>
       <a class="hy-tramo" href="/prospectos" title="<?= P::e($etapas[$k] ?? $k) ?>">
         <span class="hy-cuerpo" style="height:<?= $alt ?>px;background:<?= $col[$k] ?? '#b4b0a6' ?>;
               animation-delay:<?= $i++ * 70 ?>ms"></span>
         <span class="hy-pie">
           <b><?= P::e($etapas[$k] ?? $k) ?></b>
           <small><?= (int)$e['n'] ?> <?= $e['n'] == 1 ? 'prospecto' : 'prospectos' ?></small>
-          <em><?= D::pesos((float)$e['monto']) ?></em>
+          <em><?= D::pesos((float)$e['monto'], 0) ?></em>
         </span>
       </a>
     <?php endforeach ?>
@@ -93,18 +93,23 @@ $enPalabras = function ($fecha) {
           list($txt, $cls) = $enPalabras($p['proxima_fecha']);
           $ini = mb_strtoupper(mb_substr(trim($p['nombre']), 0, 2)); ?>
     <a class="hy-fila" href="/prospectos/<?= (int)$p['id'] ?>" style="animation-delay:<?= $n*55 ?>ms">
-      <span class="hy-av" style="background:<?= $col[$p['etapa']] ?? '#b4b0a6' ?>"><?= P::e($ini) ?></span>
+      <?php /* El color sale del nombre, no de la etapa: con la etapa,
+         todo lo recién entrado salía gris y la lista parecía apagada.
+         Así cada cliente tiene siempre el mismo color y se reconoce. */
+         $paleta = ['#4a7fb5','#b8791c','#6b6bc4','#4baa5c','#bc4237','#5a8f8f'];
+         $cAv = $paleta[crc32($p['nombre']) % count($paleta)]; ?>
+      <span class="hy-av" style="background:<?= $cAv ?>"><?= P::e($ini) ?></span>
       <span class="hy-txt">
         <b><?= P::e($p['nombre']) ?></b>
-        <small><?= P::e($p['asunto'] ?: ($etapas[$p['etapa']] ?? '')) ?>
-          <?= $p['proximo_paso'] ? ' · ' . P::e($p['proximo_paso']) : '' ?></small>
+        <small><?= P::e($p['asunto'] ?: ($etapas[$p['etapa']] ?? '')) ?></small>
       </span>
       <span class="hy-canal" style="background:<?= $colOrigen[$p['origen']] ?? '#b0aba0' ?>"
             title="<?= P::e($catOrigenes[$p['origen']] ?? $p['origen']) ?>"></span>
       <?php if ((float)$p['valor'] > 0): ?>
-        <span class="hy-mon"><?= D::pesos((float)$p['valor']) ?></span>
+        <span class="hy-mon"><?= D::pesos((float)$p['valor'], 0) ?></span>
       <?php endif ?>
-      <span class="hy-cuando <?= $cls ?>"><?= P::e($txt) ?></span>
+      <span class="hy-cuando <?= $cls ?>"><?= $p['proximo_paso']
+          ? P::e($p['proximo_paso']) . ' · ' : '' ?><?= P::e($txt) ?></span>
     </a>
   <?php endforeach; endif ?>
 </section>
@@ -162,7 +167,7 @@ $enPalabras = function ($fecha) {
 /* Sin `height` en el canal: la altura la pone el tramo más alto más su
    pie. Fijarla obligaba a los hijos a calcular porcentajes contra ella,
    que es justo lo que fallaba. */
-.hy-flujo{display:flex;align-items:flex-end;gap:5px}
+.hy-flujo{display:flex;align-items:flex-end;gap:8px}
 .hy-tramo{flex:1 1 0;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;
   text-decoration:none;color:inherit}
 /* `display:block` NO es decorativo aquí: el tramo es un <span>, y a un
@@ -186,7 +191,7 @@ $enPalabras = function ($fecha) {
 .hy-bh a{margin-left:auto;font-size:13px;color:var(--lf-tinta-3);text-decoration:none}
 .hy-bh a:hover{color:var(--lf-brand)}
 
-.hy-fila{display:flex;align-items:center;gap:14px;padding:13px 16px;
+.hy-fila{display:flex;align-items:center;gap:16px;padding:17px 20px;
   background:var(--lf-sup);border:1px solid var(--lf-linea);border-radius:13px;
   margin-bottom:7px;text-decoration:none;color:inherit;
   animation:crmSube .34s var(--crm-e) both;
@@ -194,26 +199,25 @@ $enPalabras = function ($fecha) {
              box-shadow .14s var(--crm-e)}
 .hy-fila:hover{border-color:var(--lf-linea-f);transform:translateX(3px);
   box-shadow:0 2px 12px #1918140f}
-.hy-av{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;
+.hy-av{width:36px;height:36px;border-radius:11px;flex:0 0 auto;display:grid;
   place-items:center;font-size:12px;font-weight:650;color:#fff}
 .hy-txt{flex:1;min-width:0}
 .hy-txt b{display:block;font-size:14.5px;font-weight:600;letter-spacing:-.012em}
 .hy-txt small{color:var(--lf-tinta-3);font-size:12.5px}
 .hy-canal{width:7px;height:7px;border-radius:50%;flex:0 0 auto}
 .hy-mon{font-size:14.5px;font-weight:650;letter-spacing:-.02em;white-space:nowrap}
-.hy-cuando{font-size:11.5px;font-weight:600;padding:4px 9px;border-radius:7px;white-space:nowrap;
+.hy-cuando{font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;white-space:nowrap;
   background:var(--lf-sup-2);color:var(--lf-tinta-3)}
-.hy-cuando.tarde{background:color-mix(in srgb,var(--lf-rojo) 10%,transparent);color:var(--lf-rojo)}
-.hy-cuando.hoy{background:color-mix(in srgb,var(--lf-amb) 12%,transparent);color:var(--lf-amb)}
+.hy-cuando.tarde{background:rgba(188,66,55,.11);color:var(--lf-rojo)}
+.hy-cuando.hoy{background:rgba(184,121,28,.14);color:var(--lf-amb)}
 
 .hy-limpio{text-align:center;padding:38px 20px;border-radius:13px;
-  background:color-mix(in srgb,var(--lf-brand) 7%,transparent);
-  color:var(--lf-brand-2);font-size:14px}
+  background:rgba(75,170,92,.09);color:var(--lf-brand-2);font-size:14px}
 .hy-limpio b{display:block;font-size:17px;font-weight:650;letter-spacing:-.02em;margin-bottom:3px}
 
 .hy-par{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:30px}
 @media(max-width:860px){.hy-par{grid-template-columns:1fr}}
-.hy-tj{padding:20px 22px}
+.hy-tj{padding:22px 24px}
 .hy-tj h3{font-size:14px;font-weight:650;letter-spacing:-.015em;margin:0 0 14px}
 .hy-vacio{color:var(--lf-tinta-4);font-size:13px;margin:0}
 .hy-ag{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--lf-linea)}
