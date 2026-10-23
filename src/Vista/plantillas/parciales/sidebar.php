@@ -22,11 +22,11 @@ use LibertyFin\Datos\ConfigRepo;
 // su ficha, que sí dice de quién son los números.
 $deEmpresa = [
   ['grupo' => 'Operación'],
+  ['ruta' => '/prospectos', 'icono' => 'tablero', 'texto' => 'Prospectos',    'p' => 'ver.prospectos',   'mod' => 'prospectos'],
+  ['ruta' => '/canales',    'icono' => 'chat',    'texto' => 'Canales',       'p' => 'ver.canales',      'mod' => 'canales'],
   ['ruta' => '/panel',           'icono' => 'panel',   'texto' => 'Panel',         'p' => 'ver.panel'],
   // Los módulos (Servicio\Modulos): solo si la empresa los tiene activos.
   ['ruta' => '/agenda',     'icono' => 'agenda',   'texto' => 'Agenda',        'p' => 'ver.agenda',       'mod' => 'agenda'],
-  ['ruta' => '/prospectos', 'icono' => 'tablero', 'texto' => 'Prospectos',    'p' => 'ver.prospectos',   'mod' => 'prospectos'],
-  ['ruta' => '/canales',    'icono' => 'chat',    'texto' => 'Canales',       'p' => 'ver.canales',      'mod' => 'canales'],
   ['ruta' => '/legal',      'icono' => 'libro',   'texto' => 'Asuntos',       'p' => 'ver.legal',        'mod' => 'legal'],
   ['ruta' => '/seguros',    'icono' => 'escudo',  'texto' => 'Pólizas',       'p' => 'ver.seguros',      'mod' => 'seguros'],
   ['ruta' => '/ventas',     'icono' => 'venta',   'texto' => 'Contratos',     'p' => 'ver.contratos'],
@@ -155,12 +155,23 @@ foreach ($menu as $m) {
       <?php if (isset($m['grupo'])): ?>
         <div class="sec"><?= P::e($m['grupo']) ?></div>
       <?php else: ?>
-        <a href="<?= P::e($m['ruta']) ?>" class="<?= ($activa === $m['ruta'] ? 'on' : '') ?>">
-          <?= W::icono($m['icono'], '17px') ?><?= P::e($m['texto']) ?>
+        <a href="<?= P::e($m['ruta']) ?>" class="<?= ($activa === $m['ruta'] ? 'on' : '') ?>"
+           title="<?= P::e($m['texto']) ?>">
+          <?= W::icono($m['icono'], '17px') ?><span><?= P::e($m['texto']) ?></span>
         </a>
       <?php endif; ?>
     <?php endforeach; ?>
   </nav>
+
+  <?php /* ── Barra estrecha ──
+     Kommo usa una columna de iconos, sin texto: deja la pantalla para el
+     embudo, que es donde se trabaja. Aquí es opcional y se recuerda en
+     el navegador de cada quien, porque quien lleva dos días en el
+     sistema todavía necesita leer los nombres. */ ?>
+  <button type="button" class="lf-angosta" id="lfAngosta"
+          title="Ancho del menú" aria-label="Cambiar ancho del menú">
+    <span class="lf-ang-ico">&#8249;</span><span class="lf-ang-txt">Menú estrecho</span>
+  </button>
 
   <div class="lf-pie">
     <?php $foto = $_SESSION['lf_foto'] ?? ''; ?>

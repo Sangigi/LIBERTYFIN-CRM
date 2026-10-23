@@ -58,3 +58,78 @@ if ($rotas) {
     exit(1);
 }
 echo '  destinos: las ' . count($m) . " rutas apuntan a clases y métodos que existen\n\n";
+
+// ════════════════════════════════════════════════════════
+//  ¿LOS MÉTODOS QUE SE LLAMAN EXISTEN?
+// ════════════════════════════════════════════════════════
+//
+// Un controlador que llama a `$repo->fijarPaso()` cuando ese método no
+// está no falla al revisar: la sintaxis es válida, la clase existe, la
+// ruta lleva permiso. Falla al pulsar el botón, con un error fatal.
+//
+// Pasó exactamente así al construir el panel lateral del embudo: la
+// edición que añadía el método no se aplicó, la que añadía la ruta sí, y
+// los cinco verificadores dijeron que todo estaba bien.
+//
+// Esto rastrea las variables que salen de un `new Clase(...)` dentro de
+// cada archivo y comprueba que lo que se les pide exista. No ve las que
+// llegan por parámetro ni por propiedad: la cobertura no es total, pero
+// cubre el patrón que usa todo este código.
+
+$metodosDe = [];   // clase corta => [métodos]
+foreach ($clases as $fqn => $archivo) {
+    $corto = substr($fqn, strrpos($fqn, '\\') + 1);
+    preg_match_all('/function\s+(\w+)\s*\(/', file_get_contents($archivo), $m);
+    $metodosDe[$corto] = $m[1];
+}
+
+$rotos = [];
+foreach ($archivos ?? [] as $a) {}          // placeholder: se arma abajo
+
+$it2 = new RecursiveIteratorIterator(
+    new RecursiveDirectoryIterator($src, FilesystemIterator::SKIP_DOTS));
+foreach ($it2 as $f) {
+    if ($f->getExtension() !== 'php') continue;
+    $txt = file_get_contents($f->getPathname());
+
+    // UNA FUNCIÓN A LA VEZ.
+    //
+    // La misma variable es cosas distintas en métodos distintos: en
+    // Puerta.php, `$r` es un Router en uno y una respuesta en otro.
+    // Mirar el archivo entero de golpe los confunde. Partir por
+    // `function` no es un analizador de verdad, pero acierta en el
+    // código que tenemos, y de más no acusa.
+    $trozos = preg_split('/(?=\n\s*(?:public|private|protected|static|function)\s)/', $txt);
+
+    foreach ($trozos as $trozo) {
+        preg_match_all('/\$(\w+)\s*=\s*new\s+\\\\?([\w\\\\]+)\s*\(/', $trozo, $m, PREG_SET_ORDER);
+        $tipoDe = []; $ambiguas = [];
+        foreach ($m as $x) {
+            $c = $x[2];
+            $c = substr($c, strrpos($c, '\\') === false ? 0 : strrpos($c, '\\') + 1);
+            if (!isset($metodosDe[$c])) continue;
+            if (isset($tipoDe[$x[1]]) && $tipoDe[$x[1]] !== $c) $ambiguas[$x[1]] = true;
+            $tipoDe[$x[1]] = $c;
+        }
+        foreach (array_keys($ambiguas) as $v) unset($tipoDe[$v]);
+        if (!$tipoDe) continue;
+
+        preg_match_all('/\$(\w+)->(\w+)\s*\(/', $trozo, $m2, PREG_SET_ORDER);
+        foreach ($m2 as $x) {
+            list(, $var, $metodo) = $x;
+            if (!isset($tipoDe[$var])) continue;
+            $clase = $tipoDe[$var];
+            if (!in_array($metodo, $metodosDe[$clase], true)) {
+                $rotos[] = sprintf('  %-40s  $%s->%s() — %s no lo tiene',
+                    str_replace($raiz . '/', '', $f->getPathname()), $var, $metodo, $clase);
+            }
+        }
+    }
+}
+
+echo "\n";
+if ($rotos) {
+    echo "  métodos que no existen:\n" . implode("\n", array_unique($rotos)) . "\n\n";
+    exit(1);
+}
+echo "  métodos: los que se llaman sobre objetos recién creados existen\n\n";

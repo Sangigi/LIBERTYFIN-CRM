@@ -279,6 +279,8 @@ $r->get ('/prospectos/{id}',             ['LibertyFin\\Controlador\\ProspectosCo
 $r->post('/prospectos/{id}/mover',       ['LibertyFin\\Controlador\\ProspectosControlador', 'mover']);
 $r->post('/prospectos/{id}/anotar',      ['LibertyFin\\Controlador\\ProspectosControlador', 'anotar']);
 $r->post('/prospectos/{id}/perder',      ['LibertyFin\\Controlador\\ProspectosControlador', 'perder']);
+$r->get ('/prospectos/{id}/ficha',       ['LibertyFin\\Controlador\\ProspectosControlador', 'ficha']);
+$r->post('/prospectos/{id}/tarea',       ['LibertyFin\\Controlador\\ProspectosControlador', 'tarea']);
 
 $r->get('/cotizaciones',                 ['LibertyFin\Controlador\CotizacionesControlador', 'index']);
 $r->post('/cotizaciones/guardar',        ['LibertyFin\Controlador\CotizacionesControlador', 'guardar']);
@@ -452,6 +454,8 @@ $permisos = [
   '/prospectos/{id}/mover'   => 'editar.prospectos',
   '/prospectos/{id}/anotar'  => 'editar.prospectos',
   '/prospectos/{id}/perder'  => 'editar.prospectos',
+  '/prospectos/{id}/ficha'   => 'ver.prospectos',
+  '/prospectos/{id}/tarea'   => 'editar.prospectos',
   '/cotizaciones'           => 'ver.cotizaciones',
   '/cotizaciones/guardar'   => 'editar.cotizaciones',
   '/cotizaciones/{id}'      => 'ver.cotizaciones',

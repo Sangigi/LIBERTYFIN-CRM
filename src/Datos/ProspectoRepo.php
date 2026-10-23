@@ -192,6 +192,29 @@ final class ProspectoRepo
         return $st->execute($args);
     }
 
+    /**
+     * El siguiente paso y su fecha.
+     *
+     * Sin fecha el paso no sirve: lo que mueve el embudo es que algo
+     * venza, no que esté escrito. Por eso una fecha vacía borra también
+     * el paso, en vez de dejar un recordatorio que nunca va a saltar.
+     */
+    public function fijarPaso($id, $paso, $fecha)
+    {
+        if (!$this->ver($id)) return false;
+        $paso  = trim((string)$paso);
+        $fecha = trim((string)$fecha);
+        if ($fecha === '') $paso = '';
+        $st = $this->db->prepare(
+            "UPDATE lf_prospectos SET proximo_paso = ?, proxima_fecha = ?,
+                    actualizado_en = NOW() WHERE id = ?");
+        return $st->execute([
+            $paso  === '' ? null : mb_substr($paso, 0, 255),
+            $fecha === '' ? null : $fecha,
+            (int)$id,
+        ]);
+    }
+
     /** Anotar una llamada, un correo, un "quedó de avisar el martes". */
     public function anotar($id, $texto, $usuarioId, $tipo = 'nota')
     {

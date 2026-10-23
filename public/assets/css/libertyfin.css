@@ -5215,3 +5215,60 @@ span.lf-signo{pointer-events:none}
   .table-responsive.lf-cards .lf-btn-ghost:has(.lf-txt-card){height:32px;padding:0 12px;
     border:1px solid var(--lf-linea);border-radius:var(--lf-r-pill)}
 }
+
+/* ════════════════════════════════════════════════════════
+   BARRA ESTRECHA (estilo Kommo)
+   ════════════════════════════════════════════════════════
+   Una columna de iconos en vez de un menú de texto: deja la pantalla
+   para el embudo, que es donde se trabaja.
+
+   Se activa con la clase `angosta` en <html>, que pone el JS ANTES de
+   pintar: aplicarla después se vería como un salto del menú al cargar
+   cada página.
+
+   El texto no se borra, se esconde. Un `display:none` lo quitaría
+   también para los lectores de pantalla, y entonces el menú se volvería
+   una fila de iconos sin nombre para quien no los ve. */
+html.angosta{ --lf-side-w:62px; }
+
+html.angosta .lf-nav a > span,
+html.angosta .lf-nav .sec,
+html.angosta .lf-ucard b,
+html.angosta .lf-ucard small,
+html.angosta .lf-ang-txt{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+html.angosta .lf-nav a{ justify-content:center; padding-left:0; padding-right:0; }
+html.angosta .lf-ucard{ flex-direction:column; gap:6px; }
+/* El logo se queda; lo que se esconde es el nombre de al lado. El
+   `span.g` es el logo, así que se excluye por el selector. */
+html.angosta .lf-marca > span:not(.g){ display:none; }
+html.angosta .lf-ang-ico{ transform:rotate(180deg); }
+
+/* El nombre al pasar el ratón: sin esto, aprenderse diez iconos es
+   trabajo del usuario. El `title` nativo tarda demasiado. */
+html.angosta .lf-nav a{ position:relative; }
+html.angosta .lf-nav a::after{
+  content:attr(title);
+  position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);
+  background:var(--lf-tinta);color:var(--lf-surface);
+  padding:5px 9px;border-radius:7px;font-size:12px;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity .12s;z-index:40;
+}
+html.angosta .lf-nav a:hover::after,
+html.angosta .lf-nav a:focus-visible::after{ opacity:1; }
+
+.lf-angosta{
+  display:flex;align-items:center;gap:9px;width:100%;
+  background:none;border:none;cursor:pointer;
+  color:var(--lf-tinta-3);font:inherit;font-size:12.5px;
+  padding:9px 14px;border-top:1px solid var(--lf-border);
+}
+.lf-angosta:hover{ color:var(--lf-tinta); }
+.lf-ang-ico{ font-size:17px;line-height:1;display:inline-block; }
+html.angosta .lf-angosta{ justify-content:center; padding-left:0; padding-right:0; }
+
+/* En móvil la barra ya es horizontal y se desliza: estrecharla ahí solo
+   quitaría los nombres sin ganar nada. */
+@media (max-width:860px){ html.angosta{ --lf-side-w:auto; } }

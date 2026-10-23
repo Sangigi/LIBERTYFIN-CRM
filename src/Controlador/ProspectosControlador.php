@@ -74,6 +74,80 @@ final class ProspectosControlador
         unset($_SESSION['lf_aviso']);
     }
 
+    /**
+     * La ficha en JSON, para el panel lateral del tablero.
+     *
+     * En Kommo abrir un lead no te saca del embudo: se despliega a la
+     * derecha y sigues viendo el tablero detrás. Perder el tablero para
+     * leer una nota y tener que volver rompe el ritmo de trabajo, que es
+     * justo lo que un embudo existe para sostener.
+     */
+    public function ficha($id)
+    {
+        if (!Modulos::exigir('prospectos')) return;
+        $db   = Conexion::de($_SESSION['empresa_db']);
+        $repo = new ProspectoRepo($db);
+
+        $p = $repo->ver($id);
+        if (!$p) {
+            http_response_code(404);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['ok' => false], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+
+        $notas = [];
+        foreach ($repo->notas($id) as $n) {
+            $notas[] = [
+                'texto'   => $n['texto'],
+                'tipo'    => $n['tipo'],
+                'usuario' => $n['usuario'] ?: 'sistema',
+                'cuando'  => date('d/m/Y H:i', strtotime($n['creado_en'])),
+            ];
+        }
+
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'ok' => true,
+            'p'  => [
+                'id'            => (int)$p['id'],
+                'nombre'        => $p['nombre'],
+                'telefono'      => $p['telefono'],
+                'correo'        => $p['correo'],
+                'asunto'        => $p['asunto'],
+                'valor'         => (float)$p['valor'],
+                'origen'        => ProspectoRepo::ORIGENES[$p['origen']] ?? $p['origen'],
+                'origen_clave'  => $p['origen'],
+                'etapa'         => $p['etapa'],
+                'semaforo'      => $p['semaforo'],
+                'responsable'   => $p['responsable'],
+                'proximo_paso'  => $p['proximo_paso'],
+                'proxima_fecha' => $p['proxima_fecha'],
+                'creado'        => date('d/m/Y', strtotime($p['creado_en'])),
+            ],
+            'notas'     => $notas,
+            'etapas'    => ProspectoRepo::ETAPAS,
+            'semaforos' => ProspectoRepo::SEMAFORO,
+            'editar'    => Permisos::puede('editar.prospectos'),
+        ], JSON_UNESCAPED_UNICODE);
+    }
+
+    /** Fijar el siguiente paso desde el panel lateral. */
+    public function tarea($id)
+    {
+        if (!Modulos::exigir('prospectos')) return;
+        $json = $this->pideJson();
+        if (!$this->tokenValido()) return $this->responder($json, '/prospectos', 'Sesión vencida.', 'error');
+
+        $db   = Conexion::de($_SESSION['empresa_db']);
+        $repo = new ProspectoRepo($db);
+        if (!$repo->ver($id)) return $this->noExiste($json);
+
+        $repo->fijarPaso($id, (string)($_POST['proximo_paso'] ?? ''),
+                              (string)($_POST['proxima_fecha'] ?? ''));
+        $this->responder($json, '/prospectos/' . (int)$id, 'Siguiente paso fijado.', 'ok');
+    }
+
     public function guardar()
     {
         if (!Modulos::exigir('prospectos')) return;
@@ -134,18 +208,22 @@ final class ProspectosControlador
     {
         if (!Modulos::exigir('prospectos')) return;
         $a = '/prospectos/' . (int)$id;
-        if (!$this->tokenValido()) return $this->volver($a, 'Sesión vencida.', 'error');
+        // El panel lateral anota sin recargar, así que esta ruta tiene que
+        // saber contestar JSON: una redirección obligaría al navegador a
+        // traerse la página entera para tirarla.
+        $json = $this->pideJson();
+        if (!$this->tokenValido()) return $this->responder($json, $a, 'Sesión vencida.', 'error');
 
         $texto = trim((string)($_POST['texto'] ?? ''));
-        if ($texto === '') return $this->volver($a, 'La nota está vacía.', 'error');
+        if ($texto === '') return $this->responder($json, $a, 'La nota está vacía.', 'error');
 
         $db = Conexion::de($_SESSION['empresa_db']);
         $ok = (new ProspectoRepo($db))->anotar(
             $id, $texto, (int)($_SESSION['usuario_id'] ?? 0),
             (string)($_POST['tipo'] ?? 'nota'));
 
-        if (!$ok) return $this->noExiste();
-        $this->volver($a, 'Anotado.');
+        if (!$ok) return $this->noExiste($json);
+        $this->responder($json, $a, 'Anotado.', 'ok');
     }
 
     /**

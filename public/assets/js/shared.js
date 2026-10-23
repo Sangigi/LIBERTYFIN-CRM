@@ -254,3 +254,21 @@ function openWhatsApp() {
 }
 
 document.addEventListener('DOMContentLoaded', initShared);
+/* ── Ancho del menú (barra estrecha, estilo Kommo) ──
+   La clase se pone en <html> lo antes posible: hacerlo al cargar del
+   todo se vería como un salto del menú en cada página. */
+(function () {
+  var LLAVE = 'lf-menu-angosto';
+  try {
+    if (localStorage.getItem(LLAVE) === '1') document.documentElement.classList.add('angosta');
+  } catch (e) { /* navegación privada: se queda ancho, que es el defecto */ }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var b = document.getElementById('lfAngosta');
+    if (!b) return;
+    b.addEventListener('click', function () {
+      var ahora = document.documentElement.classList.toggle('angosta');
+      try { localStorage.setItem(LLAVE, ahora ? '1' : '0'); } catch (e) {}
+    });
+  });
+})();
