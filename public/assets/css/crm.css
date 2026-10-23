@@ -1,0 +1,118 @@
+/* ════════════════════════════════════════════════════════
+   LIBERTYFIN CRM · identidad propia
+   ════════════════════════════════════════════════════════
+
+   Va DESPUÉS de libertyfin.css y solo redefine variables. No toca un
+   solo selector de componente.
+
+   POR QUÉ ASÍ Y NO EDITANDO LA HOJA GRANDE
+
+   Los dos productos comparten la forma: mismos botones, mismas tablas,
+   mismos espacios. Lo que tienen que distinguir es el color y el aire,
+   no la estructura. Separándolo en un archivo de variables, el CRM se
+   ve distinto sin duplicar 5.000 líneas que después habría que arreglar
+   dos veces.
+
+   DE DÓNDE SALE LA PALETA
+
+   LibertyFin POS es verde (#4baa5c) con grises tintados de verde. Para
+   el CRM se va al lado opuesto del círculo: índigo, con grises tintados
+   de azul. Puestos uno al lado del otro no se confunden ni de lejos,
+   pero se reconocen como de la misma casa porque la forma es idéntica.
+
+   El índigo además es el color de los CRM de embudo —Kommo, Pipedrive,
+   HubSpot tiran a morado y azul— y el verde es el del dinero y la caja.
+   Cada producto con el color de lo que hace. */
+
+:root{
+  /* ── La marca ── */
+  --lf-brand:#5b55d6;
+  --lf-brand-2:color-mix(in srgb, var(--lf-brand) 80%, #000);
+  --lf-brand-3:color-mix(in srgb, var(--lf-brand) 62%, #fff);
+  --lf-brand-d:color-mix(in srgb, var(--lf-brand) 70%, #000);
+  --lf-brand-soft:color-mix(in srgb, var(--lf-brand) 10%, #fff);
+  --lf-brand-ring:color-mix(in srgb, var(--lf-brand) 35%, transparent);
+  --lf-brand-glow:color-mix(in srgb, var(--lf-brand) 22%, transparent);
+
+  /* ── Los neutros: grises de azul, no de verde ── */
+  --lf-lienzo:#f4f5fa;
+  --lf-sup:#ffffff;
+  --lf-sup-2:#fafbfe;
+  --lf-panel:#ffffff;
+  --lf-vidrio:#eef0f8;
+  --lf-tinta:#1b1d2b;
+  --lf-tinta-2:#4a4f63;
+  --lf-tinta-3:#777d94;
+  --lf-tinta-4:#9aa0b4;
+  --lf-linea:#e6e8f2;
+  --lf-linea-f:#d6d9e8;
+
+  /* ── El verde vuelve a ser SOLO «bien» ──
+     En el POS, `--lf-success` apunta a la marca: siendo verde,
+     funcionaba. Aquí la marca es índigo, así que si no se separa, cada
+     «pagado» y cada barra de avance saldría morada y el verde dejaría
+     de querer decir nada. */
+  --lf-verde:#2ea36a;
+  --lf-success:var(--lf-verde);
+  --lf-success-bg:color-mix(in srgb, var(--lf-verde) 12%, #fff);
+  --green:var(--lf-verde); --green-d:color-mix(in srgb, var(--lf-verde) 80%, #000);
+  --green-mid:var(--lf-verde); --green-light:color-mix(in srgb, var(--lf-verde) 60%, #fff);
+  --dark-green:color-mix(in srgb, var(--lf-verde) 80%, #000);
+
+  /* ── Más aire y esquinas más suaves ──
+     Un embudo se mira de un vistazo: redondear un poco más y separar un
+     poco más deja que las tarjetas se lean como objetos sueltos en vez
+     de como filas de una tabla. */
+  --lf-r-xs:8px; --lf-r-sm:10px; --lf-r:14px; --lf-r-lg:20px;
+  --lf-r-panel:24px;
+
+  --lf-font:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ── Oscuro ──
+   La hoja grande redefine los neutros dentro de su bloque oscuro, así
+   que hay que volver a pisarlos aquí con el mismo gancho. */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --lf-lienzo:#0d0e16; --lf-panel:#161825; --lf-sup:#1a1c2b; --lf-sup-2:#212436;
+    --lf-vidrio:#262a3e;
+    --lf-tinta:#e9eaf3; --lf-tinta-2:#c3c6d6; --lf-tinta-3:#9b9fb4; --lf-tinta-4:#868aa0;
+    --lf-linea:#272a3c; --lf-linea-f:#333751;
+    /* En oscuro el índigo puro se apaga: se sube para que el botón
+       principal siga leyéndose como principal. */
+    --lf-brand:#7b76e8;
+    --lf-verde:#3fb87c;
+  }
+}
+:root[data-theme="dark"]{
+  --lf-lienzo:#0d0e16; --lf-panel:#161825; --lf-sup:#1a1c2b; --lf-sup-2:#212436;
+  --lf-vidrio:#262a3e;
+  --lf-tinta:#e9eaf3; --lf-tinta-2:#c3c6d6; --lf-tinta-3:#9b9fb4; --lf-tinta-4:#868aa0;
+  --lf-linea:#272a3c; --lf-linea-f:#333751;
+  --lf-brand:#7b76e8;
+  --lf-verde:#3fb87c;
+}
+
+/* ── El detalle que firma el producto ──
+   Una línea de color en el canto superior del menú. Es lo primero que
+   se ve al abrir, cuesta tres líneas y basta para que nadie confunda
+   una captura del CRM con una del POS. */
+.lf-side{
+  border-top:3px solid var(--lf-brand);
+  background:linear-gradient(180deg,
+    color-mix(in srgb, var(--lf-brand) 5%, transparent) 0,
+    transparent 180px);
+}
+
+/* El logo del menú, en la marca del CRM. */
+.lf-marca .g{
+  background:linear-gradient(135deg, var(--lf-brand), var(--lf-brand-d));
+  color:#fff;
+}
+
+/* La entrada activa del menú se marca con una barra a la izquierda, no
+   solo con fondo: en una barra estrecha el fondo solo es demasiado
+   sutil para ver de un vistazo dónde estás. */
+.lf-nav a.on{
+  box-shadow:inset 3px 0 0 var(--lf-brand);
+}

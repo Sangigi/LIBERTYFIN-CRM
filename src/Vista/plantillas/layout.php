@@ -65,6 +65,10 @@ unset($_SESSION['lf_entrada']);
 $hoja = __DIR__ . '/../../../public/assets/css/libertyfin.css';
 ?>
 <link rel="stylesheet" href="/assets/css/libertyfin.css?v=<?= is_file($hoja) ? filemtime($hoja) : '3' ?>">
+<?php /* La identidad del CRM va DESPUÉS: solo redefine variables, no
+   toca ningún componente. Ver el encabezado de crm.css. */
+$hojaCrm = __DIR__ . '/../../../public/assets/css/crm.css'; ?>
+<link rel="stylesheet" href="/assets/css/crm.css?v=<?= is_file($hojaCrm) ? filemtime($hojaCrm) : '1' ?>">
 <?php
 // El color de la empresa se inyecta como variable. Todo lo demás
 // —hovers, fondos tenues, anillos de foco— se calcula con color-mix,

@@ -33,6 +33,10 @@
          seguía usando la hoja vieja después de cada cambio. */
 $hojaLimpia = __DIR__ . '/../../../public/assets/css/libertyfin.css'; ?>
 <link rel="stylesheet" href="/assets/css/libertyfin.css?v=<?= is_file($hojaLimpia) ? filemtime($hojaLimpia) : '1' ?>">
+<?php /* La identidad del CRM va DESPUÉS: solo redefine variables, no
+   toca ningún componente. Ver el encabezado de crm.css. */
+$hojaCrm = __DIR__ . '/../../../public/assets/css/crm.css'; ?>
+<link rel="stylesheet" href="/assets/css/crm.css?v=<?= is_file($hojaCrm) ? filemtime($hojaCrm) : '1' ?>">
 </head>
 <?php /* `cuerpo`: el registro trae su propia composición (dos columnas);
          el login y lo demás, el verde centrado de siempre. */ ?>

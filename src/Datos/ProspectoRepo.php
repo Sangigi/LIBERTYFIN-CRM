@@ -26,7 +26,16 @@ use PDO;
  */
 final class ProspectoRepo
 {
-    /** Las etapas, en orden. La última no es etapa: es la salida. */
+    /**
+     * Las etapas de fábrica. Son el punto de partida, no la verdad.
+     *
+     * Desde la migración 30 cada empresa define las suyas en
+     * `lf_embudo_etapas`, y estas solo se usan si no hay ninguna. Se
+     * dejan aquí para que el sistema arranque sin configurar nada y para
+     * que el código tenga algo con qué validar si la tabla falla.
+     *
+     * Usa etapas() en vez de esta constante: lee las de la empresa.
+     */
     const ETAPAS = [
         'nuevo'      => 'Nuevo',
         'contactado' => 'Contactado',
@@ -71,6 +80,54 @@ final class ProspectoRepo
 
     private $db;
     private $alcance;
+    private $etapasCache = null;
+
+    /**
+     * Las etapas de ESTA empresa, en orden, más las dos salidas.
+     *
+     * Ganado y perdido se añaden siempre y no se pueden configurar: no
+     * son etapas del embudo sino su final. Dejar que alguien las borre
+     * daría un tablero del que no se puede salir.
+     *
+     * Si la tabla no existe todavía —una empresa anterior a la
+     * migración 30— o está vacía, se devuelven las de fábrica. El
+     * tablero sigue funcionando mientras tanto.
+     */
+    public function etapas()
+    {
+        if ($this->etapasCache !== null) return $this->etapasCache;
+
+        $propias = [];
+        try {
+            $st = $this->db->query(
+                'SELECT clave, nombre FROM lf_embudo_etapas WHERE activa = 1 ORDER BY orden, id');
+            if ($st) foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $e) {
+                $propias[$e['clave']] = $e['nombre'];
+            }
+        } catch (\Throwable $e) {
+            $propias = [];   // tabla aún no creada: se usan las de fábrica
+        }
+
+        if (!$propias) {
+            $propias = self::ETAPAS;
+            unset($propias['ganado'], $propias['perdido']);
+        }
+
+        $propias['ganado']  = 'Ganado';
+        $propias['perdido'] = 'Perdido';
+        return $this->etapasCache = $propias;
+    }
+
+    /** Los colores por clave, para el tablero. */
+    public function coloresEtapa()
+    {
+        $r = [];
+        try {
+            $st = $this->db->query('SELECT clave, color FROM lf_embudo_etapas WHERE activa = 1');
+            if ($st) foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $e) $r[$e['clave']] = $e['color'];
+        } catch (\Throwable $e) { /* sin tabla: el tablero usa su gris */ }
+        return $r;
+    }
 
     public function __construct(PDO $db, Alcance $alcance = null)
     {
@@ -99,7 +156,7 @@ final class ProspectoRepo
         $st->execute($this->alcance->parametros('responsable_id'));
 
         $porEtapa = [];
-        foreach (array_keys(self::ETAPAS) as $e) {
+        foreach (array_keys($this->etapas()) as $e) {
             if ($e === 'ganado' || $e === 'perdido') continue;
             $porEtapa[$e] = [];
         }
@@ -157,7 +214,7 @@ final class ProspectoRepo
             $this->oNull($d['correo'] ?? null),
             $this->valido($d['origen'] ?? 'manual', self::ORIGENES, 'manual'),
             $this->oNull($d['asunto'] ?? null),
-            $this->valido($d['etapa'] ?? 'nuevo', self::ETAPAS, 'nuevo'),
+            $this->valido($d['etapa'] ?? 'nuevo', $this->etapas(), 'nuevo'),
             $this->valido($d['semaforo'] ?? 'verde', self::SEMAFORO, 'verde'),
             (float)($d['valor'] ?? 0),
             !empty($d['responsable_id']) ? (int)$d['responsable_id'] : null,
@@ -179,7 +236,7 @@ final class ProspectoRepo
         if (!$this->ver($id)) return false;
 
         $campos = ['etapa = ?'];
-        $args   = [$this->valido($etapa, self::ETAPAS, 'nuevo')];
+        $args   = [$this->valido($etapa, $this->etapas(), 'nuevo')];
         if ($semaforo !== null) {
             $campos[] = 'semaforo = ?';
             $args[]   = $this->valido($semaforo, self::SEMAFORO, 'verde');

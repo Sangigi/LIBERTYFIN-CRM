@@ -10,7 +10,9 @@ $hoy   = date('Y-m-d');
 
 /* El color de cada columna. El embudo se lee de izquierda a derecha, y
    el color acompaña el avance: frío al entrar, cálido al cerrar. */
-$colorEtapa = [
+/* El color viene de la empresa (migración 30). Los de aquí son el
+   respaldo para una empresa que todavía no los configuró. */
+$colorEtapa = ($colores ?? []) + [
     'nuevo'      => '#64748b',
     'contactado' => '#0ea5e9',
     'cita'       => '#6366f1',

@@ -30,7 +30,7 @@ use PDO;
 final class Migraciones
 {
     /** Súbelo al agregar una migración nueva. */
-    const VERSION = 29;
+    const VERSION = 30;
 
     /**
      * La versión vive en `lf_ajustes`, no en `sistema_config`.
@@ -1399,6 +1399,52 @@ final class Migraciones
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
     }
 
+    /**
+     * 30 · Las etapas del embudo, propias de cada empresa.
+     *
+     * Hasta aquí estaban fijas en el código. Un despacho que trabaja por
+     * «consulta → estudio → propuesta» no tiene por qué llamarles
+     * «contactado → cita → propuesta», y obligarle a traducir cada vez
+     * es la razón por la que la gente deja de mover las tarjetas.
+     *
+     * Las dos de SALIDA —ganado y perdido— NO se guardan aquí: no son
+     * etapas configurables sino el final del embudo, y quitarlas dejaría
+     * un tablero del que no se puede salir.
+     *
+     * Si una empresa no define ninguna, se usan las de fábrica. Así esta
+     * migración no obliga a nadie a configurar nada para seguir
+     * trabajando.
+     */
+    private static function v30(PDO $db)
+    {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS lf_embudo_etapas (
+                id        INT AUTO_INCREMENT PRIMARY KEY,
+                clave     VARCHAR(24)  NOT NULL,
+                nombre    VARCHAR(60)  NOT NULL,
+                color     CHAR(7)      NOT NULL DEFAULT '#64748b',
+                orden     INT          NOT NULL DEFAULT 0,
+                activa    TINYINT(1)   NOT NULL DEFAULT 1,
+                UNIQUE KEY ux_etapa_clave (clave),
+                KEY ix_etapa_orden (orden)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+        // Se siembran las de fábrica SOLO si la tabla está vacía: correr
+        // la migración dos veces no debe reponer una etapa que alguien
+        // borró a propósito.
+        $n = (int)$db->query('SELECT COUNT(*) FROM lf_embudo_etapas')->fetchColumn();
+        if ($n > 0) return;
+
+        $st = $db->prepare('INSERT INTO lf_embudo_etapas (clave, nombre, color, orden) VALUES (?,?,?,?)');
+        $base = [
+            ['nuevo',      'Nuevo',             '#64748b', 10],
+            ['contactado', 'Contactado',        '#0ea5e9', 20],
+            ['cita',       'Cita agendada',     '#6366f1', 30],
+            ['propuesta',  'Propuesta enviada', '#8b5cf6', 40],
+        ];
+        foreach ($base as $e) $st->execute($e);
+    }
+
     /** Lo que hace cada versión, para mostrarlo en Mantenimiento. */
     const DESCRIPCIONES = [
         1 => 'Tabla de ajustes propia (lf_ajustes)',
@@ -1429,5 +1475,6 @@ final class Migraciones
         27 => 'Canales: id externo del lead (anti-duplicado) y bitácora de entradas',
         28 => 'Despacho jurídico: asuntos, actuaciones y documentos por trámite',
         29 => 'Agencia de seguros: pólizas con vigencia y comisión',
+        30 => 'Embudo: etapas propias de cada empresa, con color y orden',
     ];
 }
