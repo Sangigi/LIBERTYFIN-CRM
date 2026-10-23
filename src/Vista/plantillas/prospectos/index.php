@@ -51,9 +51,9 @@ $iconoOrigen = [
    vez de quedarse donde el navegador la dejó, que es como se acaba
    viendo un tablero que no coincide con la base. */ ?>
 <div class="pz-tablero" id="pzTablero">
-<?php foreach ($tablero as $clave => $lista):
+<?php $i = 0; foreach ($tablero as $clave => $lista):
         $suma = 0; foreach ($lista as $x) $suma += (float)$x['valor']; ?>
-  <section class="pz-col" data-etapa="<?= P::e($clave) ?>">
+  <section class="pz-col" data-etapa="<?= P::e($clave) ?>" style="--i:<?= $i++ ?>">
     <header style="--c:<?= $colorEtapa[$clave] ?? '#64748b' ?>">
       <span class="pz-tit"><?= P::e($etapas[$clave] ?? $clave) ?></span>
       <span class="pz-n"><?= count($lista) ?></span>
@@ -87,6 +87,7 @@ $iconoOrigen = [
           <?php endif ?>
 
           <footer>
+            <span class="pz-sem" title="<?= P::e($semaforos[$p['semaforo']] ?? '') ?>"></span>
             <span class="pz-canal" title="<?= P::e($origenes[$p['origen']] ?? $p['origen']) ?>">
               <?= $iconoOrigen[$p['origen']] ?? '•' ?></span>
             <span class="pz-resp"><?= $p['responsable']
@@ -101,11 +102,11 @@ $iconoOrigen = [
 
   <?php /* Las dos salidas del embudo, al final y más angostas: se usan
            para soltar, casi nunca para mirar. */ ?>
-  <section class="pz-col pz-salida" data-etapa="ganado">
+  <section class="pz-col pz-salida" data-etapa="ganado" style="--i:<?= $i++ ?>">
     <header style="--c:#16a34a"><span class="pz-tit">Ganado</span></header>
     <div class="pz-pila"><p class="pz-vacio">Suelta para cerrar</p></div>
   </section>
-  <section class="pz-col pz-salida" data-etapa="perdido">
+  <section class="pz-col pz-salida" data-etapa="perdido" style="--i:<?= $i++ ?>">
     <header style="--c:#dc2626"><span class="pz-tit">Perdido</span></header>
     <div class="pz-pila"><p class="pz-vacio">Suelta para descartar</p></div>
   </section>
@@ -204,44 +205,99 @@ $iconoOrigen = [
 
 /* El tablero rueda en horizontal: un embudo con seis etapas no cabe en
    una pantalla, y apilarlo en vertical le quita lo que lo hace útil. */
-.pz-tablero{display:flex;gap:12px;overflow-x:auto;padding-bottom:14px;
-  align-items:flex-start;scroll-snap-type:x proximity}
-.pz-col{flex:0 0 268px;scroll-snap-align:start;background:var(--lf-surface-2);
-  border:1px solid var(--lf-border);border-radius:12px;display:flex;flex-direction:column;
-  max-height:calc(100vh - 230px)}
-.pz-col.pz-salida{flex:0 0 150px}
-.pz-col>header{padding:10px 12px;border-bottom:1px solid var(--lf-border);
-  border-top:3px solid var(--c);border-radius:12px 12px 0 0;display:flex;
-  align-items:center;gap:8px;flex-wrap:wrap}
-.pz-tit{font-weight:600;font-size:13px;flex:1}
-.pz-n{background:var(--lf-surface-3);border-radius:999px;padding:1px 8px;font-size:11px}
-.pz-col>header small{width:100%;font-size:11px;color:var(--lf-tinta-3)}
-.pz-pila{padding:10px;display:flex;flex-direction:column;gap:9px;overflow-y:auto;flex:1;min-height:70px}
+.pz-tablero{display:flex;gap:14px;overflow-x:auto;padding:4px 4px 16px;
+  align-items:flex-start;scroll-snap-type:x proximity;scroll-behavior:smooth}
 
-.pz-tar{background:var(--lf-surface);border:1px solid var(--lf-border);
-  border-left:3px solid var(--lf-success);border-radius:9px;padding:10px;
-  cursor:grab;transition:box-shadow .12s,transform .12s}
-.pz-tar:hover{box-shadow:0 2px 10px rgba(0,0,0,.09)}
-.pz-tar.s-amarillo{border-left-color:var(--lf-warning)}
-.pz-tar.s-rojo{border-left-color:var(--lf-danger)}
-.pz-tar.arrastrando{opacity:.4;transform:rotate(1.5deg)}
-.pz-nom{font-weight:600;font-size:13px;text-decoration:none;color:var(--lf-tinta);
-  display:block;line-height:1.3}
-.pz-asunto{font-size:12px;color:var(--lf-tinta-3);margin-top:1px}
-.pz-val{font-size:12px;font-weight:600;margin-top:3px}
-.pz-tarea{font-size:11px;margin-top:6px;color:var(--lf-tinta-3);display:flex;
-  align-items:center;gap:4px}
-.pz-tarea.venc{color:var(--lf-danger);font-weight:600}
-.pz-tarea.falta{color:var(--lf-warning)}
-.pz-tar>footer{display:flex;align-items:center;gap:6px;margin-top:8px;
-  padding-top:7px;border-top:1px solid var(--lf-border);font-size:11px}
-.pz-resp{color:var(--lf-tinta-3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Las columnas entran escalonadas: la primera antes que la última, con
+   40 ms de diferencia. El ojo lo lee como «se está armando» en vez de
+   como «apareció de golpe», y cuesta una variable. */
+.pz-col{flex:0 0 272px;scroll-snap-align:start;background:var(--lf-sup-2);
+  border:none;border-radius:var(--lf-r);display:flex;flex-direction:column;
+  max-height:calc(100vh - 230px);
+  animation:pzCol .34s var(--crm-ease) both;animation-delay:calc(var(--i,0) * 40ms);
+  transition:background-color .18s var(--crm-ease),transform .18s var(--crm-ease)}
+@keyframes pzCol{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.pz-col.pz-salida{flex:0 0 148px;background:transparent;
+  box-shadow:inset 0 0 0 2px var(--lf-linea)}
+.pz-col>header{padding:13px 14px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* El color de la etapa es un punto, no una franja. Una línea de 3px
+   cruzando cada columna compite con el contenido; un punto de 7px dice
+   lo mismo y desaparece cuando no lo buscas. */
+.pz-tit{font-weight:650;font-size:13.5px;flex:1;letter-spacing:-.01em;
+  display:flex;align-items:center;gap:7px}
+.pz-tit::before{content:"";width:7px;height:7px;border-radius:50%;
+  background:var(--c);flex:0 0 auto}
+.pz-n{background:var(--lf-vidrio);border-radius:999px;padding:2px 9px;
+  font-size:11px;font-weight:600;color:var(--lf-tinta-3)}
+.pz-col>header small{width:100%;font-size:11px;color:var(--lf-tinta-4);
+  letter-spacing:.02em}
+.pz-pila{padding:0 10px 10px;display:flex;flex-direction:column;gap:8px;
+  overflow-y:auto;flex:1;min-height:76px}
+
+/* ── La tarjeta ──
+   Sin borde. El semáforo es un punto en el pie, no una barra lateral:
+   lo que define a este lead es su nombre, no su color. */
+.pz-tar{background:var(--lf-sup);border:none;border-radius:var(--lf-r-sm);
+  padding:11px 12px;cursor:grab;box-shadow:var(--crm-e1);
+  transition:box-shadow .18s var(--crm-ease),transform .18s var(--crm-ease);
+  animation:pzTar .28s var(--crm-ease) both;will-change:transform}
+@keyframes pzTar{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.pz-tar:hover{box-shadow:var(--crm-e2);transform:translateY(-2px)}
+.pz-tar:active{cursor:grabbing}
+
+/* Al arrastrar: se inclina y se levanta, como una ficha que se despega
+   de la mesa. Es el momento en que la interfaz tiene que sentirse
+   física, porque el gesto lo es. */
+.pz-tar.arrastrando{opacity:.92;transform:rotate(2.5deg) scale(1.04);
+  box-shadow:var(--crm-e3);cursor:grabbing;transition:none}
+
+.pz-nom{background:none;border:none;padding:0;text-align:left;cursor:pointer;
+  font:inherit;font-weight:650;font-size:13.5px;color:var(--lf-tinta);
+  display:block;line-height:1.3;letter-spacing:-.01em;
+  transition:color .14s var(--crm-ease)}
+.pz-nom:hover{color:var(--lf-brand-2)}
+.pz-asunto{font-size:12px;color:var(--lf-tinta-3);margin-top:2px;line-height:1.35}
+.pz-val{font-size:12.5px;font-weight:650;margin-top:5px;letter-spacing:-.01em}
+
+/* La tarea: una pastilla, no una línea de texto. Lo vencido se nota sin
+   leerlo. */
+.pz-tarea{font-size:11px;margin-top:8px;display:inline-flex;align-items:center;
+  gap:5px;padding:3px 9px;border-radius:999px;
+  background:var(--lf-vidrio);color:var(--lf-tinta-3)}
+.pz-tarea.venc{background:color-mix(in srgb, var(--lf-rojo) 13%, transparent);
+  color:var(--lf-rojo);font-weight:600}
+.pz-tarea.falta{background:color-mix(in srgb, var(--lf-amb) 15%, transparent);
+  color:color-mix(in srgb, var(--lf-amb) 78%, #000)}
+
+.pz-tar>footer{display:flex;align-items:center;gap:7px;margin-top:9px;
+  padding-top:8px;box-shadow:inset 0 1px 0 var(--lf-linea);font-size:11px}
+.pz-resp{color:var(--lf-tinta-4);flex:1;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
 .pz-canal{font-size:13px;line-height:1}
-.pz-vacio{font-size:11px;color:var(--lf-tinta-4);text-align:center;margin:auto;padding:12px}
-.pz-nada{text-align:center;color:var(--lf-tinta-4);font-size:13px;padding:40px}
+/* El semáforo, al final y como punto. */
+.pz-sem{width:7px;height:7px;border-radius:50%;background:var(--lf-brand);flex:0 0 auto}
+.pz-tar.s-amarillo .pz-sem{background:var(--lf-amb)}
+.pz-tar.s-rojo .pz-sem{background:var(--lf-rojo)}
 
-/* La columna que recibe se enciende: sin eso, soltar es adivinar. */
-.pz-col.encima{outline:2px dashed var(--lf-brand);outline-offset:-3px}
+.pz-vacio{font-size:11px;color:var(--lf-tinta-4);text-align:center;margin:auto;
+  padding:14px;transition:color .18s var(--crm-ease)}
+.pz-nada{text-align:center;color:var(--lf-tinta-4);font-size:13px;padding:46px}
+
+/* La columna que recibe: se tiñe y se levanta. Un contorno punteado es
+   lo que hace todo el mundo y además se pelea con el redondeo. */
+.pz-col.encima{background:color-mix(in srgb, var(--lf-brand) 9%, var(--lf-sup-2));
+  transform:translateY(-3px)}
+.pz-col.pz-salida.encima{box-shadow:inset 0 0 0 2px var(--lf-brand)}
+.pz-col.encima .pz-vacio{color:var(--lf-brand-2)}
+
+.pz-barra{display:flex;justify-content:space-between;align-items:center;gap:16px;
+  flex-wrap:wrap;margin-bottom:16px}
+.pz-cifras{display:flex;gap:22px;flex-wrap:wrap;font-size:12.5px;color:var(--lf-tinta-4)}
+.pz-cifras b{color:var(--lf-tinta);font-size:17px;font-weight:650;
+  letter-spacing:-.02em;margin-right:4px}
+.pz-cifras .ok b{color:var(--lf-brand)}
+.pz-cifras .urge b{color:var(--lf-rojo)}
 
 .pz-dlg{border:none;border-radius:14px;padding:22px;max-width:620px;width:94vw;
   background:var(--lf-surface);color:var(--lf-tinta)}
@@ -252,30 +308,56 @@ $iconoOrigen = [
 .pz-campos span{color:var(--lf-danger)}
 .pz-acc{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
 @media (max-width:640px){ .pz-col{flex-basis:84vw} .pz-col.pz-salida{flex-basis:46vw} }
-/* ── El panel lateral ── */
-.pz-panel{position:fixed;top:0;right:0;height:100%;width:430px;max-width:94vw;
-  background:var(--lf-surface);border-left:1px solid var(--lf-border);
-  box-shadow:-8px 0 28px rgba(0,0,0,.16);z-index:60;display:flex;flex-direction:column;
-  animation:pzEntra .16s ease-out}
-@keyframes pzEntra{from{transform:translateX(26px);opacity:.4}to{transform:none;opacity:1}}
-.pz-panel>header{display:flex;align-items:flex-start;gap:10px;padding:16px 18px;
-  border-bottom:1px solid var(--lf-border)}
-.pz-panel h3{margin:0;font-size:17px;line-height:1.25}
-.pz-panel header small{color:var(--lf-tinta-3);font-size:12px}
-.pz-x{background:none;border:none;font-size:26px;line-height:1;cursor:pointer;
-  color:var(--lf-tinta-3);padding:0 2px}
-.pz-panel-cuerpo{padding:16px 18px;overflow-y:auto;flex:1}
-.pz-panel dl{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;margin:0 0 18px;font-size:13px}
-.pz-panel dt{color:var(--lf-tinta-3)}
+/* ── El panel lateral ──
+   Entra deslizando desde el borde, no apareciendo. La diferencia entre
+   las dos cosas es si el ojo entiende DE DÓNDE salió el panel: si surge
+   de la nada, hay que volver a buscar dónde estabas. */
+.pz-panel{position:fixed;top:0;right:0;height:100%;width:440px;max-width:94vw;
+  background:var(--lf-sup);border-left:none;box-shadow:var(--crm-e3);
+  z-index:60;display:flex;flex-direction:column;
+  animation:pzEntra .3s var(--crm-ease) both;will-change:transform}
+@keyframes pzEntra{from{transform:translateX(100%)}to{transform:none}}
+@keyframes pzSale{from{transform:none}to{transform:translateX(100%)}}
+.pz-panel>header{display:flex;align-items:flex-start;gap:12px;padding:20px 22px 16px}
+.pz-panel h3{margin:0;font-size:19px;line-height:1.2;letter-spacing:-.02em;font-weight:650}
+.pz-panel header small{color:var(--lf-tinta-4);font-size:12px;letter-spacing:.01em}
+.pz-x{background:none;border:none;font-size:22px;line-height:1;cursor:pointer;
+  color:var(--lf-tinta-4);padding:4px 7px;border-radius:999px;
+  transition:background-color .16s var(--crm-ease),color .16s var(--crm-ease),
+             transform .16s var(--crm-ease)}
+.pz-x:hover{background:var(--lf-vidrio);color:var(--lf-tinta);transform:rotate(90deg)}
+.pz-panel-cuerpo{padding:0 22px 22px;overflow-y:auto;flex:1}
+
+/* Cada bloque entra un poco después del anterior: el panel se lee de
+   arriba abajo y así se presenta en ese orden. */
+.pz-panel-cuerpo > *{animation:pzBloque .3s var(--crm-ease) both}
+.pz-panel-cuerpo > *:nth-child(2){animation-delay:.05s}
+.pz-panel-cuerpo > *:nth-child(3){animation-delay:.1s}
+@keyframes pzBloque{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.pz-panel dl{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;
+  margin:0 0 20px;font-size:13px}
+.pz-panel dt{color:var(--lf-tinta-4);font-size:12px}
 .pz-panel dd{margin:0}
-.pz-bloque{border-top:1px solid var(--lf-border);padding-top:14px;margin-top:14px}
-.pz-bloque h4{margin:0 0 9px;font-size:13px;color:var(--lf-tinta-2)}
-.pz-fila{display:flex;gap:7px;margin-top:7px}
-.pz-notas{list-style:none;padding:0;margin:12px 0 0}
-.pz-notas li{border-left:2px solid var(--lf-border);padding:0 0 12px 12px;font-size:12.5px}
-.pz-notas b{display:block;font-weight:400}
+.pz-bloque{padding-top:18px;margin-top:18px;box-shadow:inset 0 1px 0 var(--lf-linea)}
+.pz-bloque h4{margin:0 0 10px;font-size:11.5px;letter-spacing:.055em;
+  text-transform:uppercase;color:var(--lf-tinta-4);font-weight:600}
+.pz-fila{display:flex;gap:8px;margin-top:8px}
+
+/* La bitácora: una línea de tiempo, con el punto de cada entrada sobre
+   la línea. Sin el punto son párrafos sangrados; con él, una secuencia. */
+.pz-notas{list-style:none;padding:0;margin:14px 0 0;position:relative}
+.pz-notas li{padding:0 0 15px 18px;font-size:12.5px;position:relative}
+.pz-notas li::before{content:"";position:absolute;left:0;top:5px;
+  width:7px;height:7px;border-radius:50%;background:var(--lf-linea-f)}
+.pz-notas li::after{content:"";position:absolute;left:3px;top:14px;bottom:0;
+  width:1px;background:var(--lf-linea)}
+.pz-notas li:last-child::after{display:none}
+.pz-notas b{display:block;font-weight:400;line-height:1.45}
 .pz-notas small{color:var(--lf-tinta-4);font-size:11px}
-.pz-velo{position:fixed;inset:0;background:rgba(15,23,42,.28);z-index:59}
+.pz-velo{position:fixed;inset:0;background:rgba(16,32,24,.3);z-index:59;
+  backdrop-filter:blur(2px);animation:pzVelo .22s var(--crm-ease) both}
+@keyframes pzVelo{from{opacity:0}to{opacity:1}}
 .pz-nom{background:none;border:none;padding:0;text-align:left;cursor:pointer;
   font:inherit;font-weight:600;font-size:13px;color:var(--lf-tinta);display:block;line-height:1.3}
 .pz-nom:hover{color:var(--lf-brand)}
@@ -332,9 +414,36 @@ $iconoOrigen = [
 
     // Se mueve YA en pantalla: esperar al servidor para redibujar hace
     // que arrastrar se sienta roto. Si falla, vuelve sola.
+    //
+    // Y se mueve DESLIZÁNDOSE, no saltando. La técnica es medir dónde
+    // estaba, cambiarlo de sitio, devolverlo visualmente a donde estaba
+    // con un `transform`, y quitarlo en el cuadro siguiente: el
+    // navegador anima la diferencia. Mover el nodo y ya daría un salto
+    // seco justo en el gesto que más tiene que sentirse físico.
+    var antes = tarjeta.getBoundingClientRect();
     col.querySelector('.pz-pila').appendChild(tarjeta);
     var hueco = col.querySelector('.pz-vacio');
     if (hueco) hueco.style.display = 'none';
+
+    var despues = tarjeta.getBoundingClientRect();
+    var dx = antes.left - despues.left, dy = antes.top - despues.top;
+    if (dx || dy) {
+      tarjeta.style.transition = 'none';
+      tarjeta.style.transform  = 'translate(' + dx + 'px,' + dy + 'px)';
+      requestAnimationFrame(function () {
+        tarjeta.style.transition = 'transform .3s var(--crm-ease)';
+        tarjeta.style.transform  = '';
+        setTimeout(function () {
+          tarjeta.style.transition = ''; tarjeta.style.transform = '';
+        }, 320);
+      });
+    }
+
+    // La columna de origen puede quedarse vacía: su texto vuelve.
+    var vacioOrigen = desde.querySelector('.pz-vacio');
+    if (vacioOrigen && !desde.querySelectorAll('.pz-tar').length) {
+      vacioOrigen.style.display = '';
+    }
 
     var cuerpo = new URLSearchParams();
     cuerpo.set('token', token);
@@ -364,8 +473,18 @@ var pzPanel = document.getElementById('pzPanel');
 var pzVelo  = document.getElementById('pzVelo');
 var pzId    = null;
 
+/* Cerrar también se anima. Un panel que desaparece de golpe deja al ojo
+   preguntándose si se cerró o si falló algo; uno que se va por donde
+   vino no deja duda. */
 window.pzCerrar = function () {
-  pzPanel.hidden = true; pzVelo.hidden = true; pzId = null;
+  if (pzPanel.hidden) return;
+  pzPanel.style.animation = 'pzSale .22s var(--crm-ease) forwards';
+  pzVelo.style.animation  = 'pzVelo .22s var(--crm-ease) reverse forwards';
+  setTimeout(function () {
+    pzPanel.hidden = true; pzVelo.hidden = true;
+    pzPanel.style.animation = ''; pzVelo.style.animation = '';
+    pzId = null;
+  }, 200);
 };
 
 function pzEscapar(s) {
@@ -415,6 +534,7 @@ tablero.addEventListener('click', function (e) {
   var b = e.target.closest('[data-abrir]');
   if (!b) return;
   pzId = b.dataset.abrir;
+  pzPanel.style.animation = ''; pzVelo.style.animation = '';
   pzPanel.hidden = false; pzVelo.hidden = false;
   document.getElementById('pzpNombre').textContent = 'Cargando…';
   document.getElementById('pzpDatos').innerHTML = '';

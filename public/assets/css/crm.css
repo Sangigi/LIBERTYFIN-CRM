@@ -1,118 +1,189 @@
 /* ════════════════════════════════════════════════════════
-   LIBERTYFIN CRM · identidad propia
+   LIBERTYFIN CRM · carácter propio
    ════════════════════════════════════════════════════════
 
-   Va DESPUÉS de libertyfin.css y solo redefine variables. No toca un
-   solo selector de componente.
+   Va DESPUÉS de libertyfin.css. El verde de la casa NO se toca: es el
+   color de LibertyFin y los dos productos son LibertyFin.
 
-   POR QUÉ ASÍ Y NO EDITANDO LA HOJA GRANDE
+   ENTONCES, ¿QUÉ LO HACE DISTINTO?
 
-   Los dos productos comparten la forma: mismos botones, mismas tablas,
-   mismos espacios. Lo que tienen que distinguir es el color y el aire,
-   no la estructura. Separándolo en un archivo de variables, el CRM se
-   ve distinto sin duplicar 5.000 líneas que después habría que arreglar
-   dos veces.
+   El movimiento y el aire. Dos productos pueden compartir paleta y no
+   parecerse en nada si uno se siente pesado y el otro ligero. El POS es
+   una herramienta de mostrador: se usa de pie, con prisa, y lo que
+   importa es que el botón esté donde siempre. El CRM se usa sentado,
+   mirando, arrastrando: ahí la sensación de respuesta ES la interfaz.
 
-   DE DÓNDE SALE LA PALETA
+   Tres decisiones de fondo:
 
-   LibertyFin POS es verde (#4baa5c) con grises tintados de verde. Para
-   el CRM se va al lado opuesto del círculo: índigo, con grises tintados
-   de azul. Puestos uno al lado del otro no se confunden ni de lejos,
-   pero se reconocen como de la misma casa porque la forma es idéntica.
+   1. MENOS LÍNEAS. La jerarquía la dan el espacio y la elevación, no
+      los bordes. Un tablero con borde en cada tarjeta, cada columna y
+      cada panel se lee como una hoja de cálculo.
 
-   El índigo además es el color de los CRM de embudo —Kommo, Pipedrive,
-   HubSpot tiran a morado y azul— y el verde es el del dinero y la caja.
-   Cada producto con el color de lo que hace. */
+   2. TODO RESPONDE AL INSTANTE. Nada cambia de golpe y nada tarda más
+      de 240 ms. El ojo lee un cambio instantáneo como un error de
+      pintado; por encima de 300 ms lo lee como lentitud.
+
+   3. SE MUEVE LO BARATO. Solo `transform` y `opacity`, que el navegador
+      resuelve sin recalcular la página. Animar `width`, `top` o
+      `height` obliga a recomponerlo todo en cada cuadro, y eso es
+      exactamente lo que se siente como tirones.
+   ════════════════════════════════════════════════════════ */
 
 :root{
-  /* ── La marca ── */
-  --lf-brand:#5b55d6;
-  --lf-brand-2:color-mix(in srgb, var(--lf-brand) 80%, #000);
-  --lf-brand-3:color-mix(in srgb, var(--lf-brand) 62%, #fff);
-  --lf-brand-d:color-mix(in srgb, var(--lf-brand) 70%, #000);
-  --lf-brand-soft:color-mix(in srgb, var(--lf-brand) 10%, #fff);
-  --lf-brand-ring:color-mix(in srgb, var(--lf-brand) 35%, transparent);
-  --lf-brand-glow:color-mix(in srgb, var(--lf-brand) 22%, transparent);
+  /* Las curvas. Una interfaz se siente de un modo u otro casi solo por
+     esto: arranca rápido y frena despacio, como las cosas reales. */
+  --crm-ease:cubic-bezier(.22,1,.36,1);        /* salida suave, la de diario */
+  --crm-ease-s:cubic-bezier(.34,1.56,.64,1);   /* con rebote, para lo que aparece */
+  --crm-t:.2s;
+  --crm-t-l:.34s;
 
-  /* ── Los neutros: grises de azul, no de verde ── */
-  --lf-lienzo:#f4f5fa;
-  --lf-sup:#ffffff;
-  --lf-sup-2:#fafbfe;
-  --lf-panel:#ffffff;
-  --lf-vidrio:#eef0f8;
-  --lf-tinta:#1b1d2b;
-  --lf-tinta-2:#4a4f63;
-  --lf-tinta-3:#777d94;
-  --lf-tinta-4:#9aa0b4;
-  --lf-linea:#e6e8f2;
-  --lf-linea-f:#d6d9e8;
+  /* Elevación en vez de contorno. Sombras muy abiertas y muy tenues:
+     se notan sin que se vean. */
+  --crm-e1:0 1px 2px rgba(16,32,24,.05), 0 2px 10px rgba(16,32,24,.04);
+  --crm-e2:0 2px 6px rgba(16,32,24,.07), 0 10px 26px rgba(16,32,24,.07);
+  --crm-e3:0 8px 20px rgba(16,32,24,.1), 0 28px 60px rgba(16,32,24,.12);
 
-  /* ── El verde vuelve a ser SOLO «bien» ──
-     En el POS, `--lf-success` apunta a la marca: siendo verde,
-     funcionaba. Aquí la marca es índigo, así que si no se separa, cada
-     «pagado» y cada barra de avance saldría morada y el verde dejaría
-     de querer decir nada. */
-  --lf-verde:#2ea36a;
-  --lf-success:var(--lf-verde);
-  --lf-success-bg:color-mix(in srgb, var(--lf-verde) 12%, #fff);
-  --green:var(--lf-verde); --green-d:color-mix(in srgb, var(--lf-verde) 80%, #000);
-  --green-mid:var(--lf-verde); --green-light:color-mix(in srgb, var(--lf-verde) 60%, #fff);
-  --dark-green:color-mix(in srgb, var(--lf-verde) 80%, #000);
-
-  /* ── Más aire y esquinas más suaves ──
-     Un embudo se mira de un vistazo: redondear un poco más y separar un
-     poco más deja que las tarjetas se lean como objetos sueltos en vez
-     de como filas de una tabla. */
-  --lf-r-xs:8px; --lf-r-sm:10px; --lf-r:14px; --lf-r-lg:20px;
-  --lf-r-panel:24px;
-
-  --lf-font:'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Más redondo y más aire que el POS. */
+  --lf-r-xs:9px; --lf-r-sm:12px; --lf-r:16px; --lf-r-lg:22px; --lf-r-panel:28px;
 }
 
-/* ── Oscuro ──
-   La hoja grande redefine los neutros dentro de su bloque oscuro, así
-   que hay que volver a pisarlos aquí con el mismo gancho. */
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --lf-lienzo:#0d0e16; --lf-panel:#161825; --lf-sup:#1a1c2b; --lf-sup-2:#212436;
-    --lf-vidrio:#262a3e;
-    --lf-tinta:#e9eaf3; --lf-tinta-2:#c3c6d6; --lf-tinta-3:#9b9fb4; --lf-tinta-4:#868aa0;
-    --lf-linea:#272a3c; --lf-linea-f:#333751;
-    /* En oscuro el índigo puro se apaga: se sube para que el botón
-       principal siga leyéndose como principal. */
-    --lf-brand:#7b76e8;
-    --lf-verde:#3fb87c;
-  }
-}
-:root[data-theme="dark"]{
-  --lf-lienzo:#0d0e16; --lf-panel:#161825; --lf-sup:#1a1c2b; --lf-sup-2:#212436;
-  --lf-vidrio:#262a3e;
-  --lf-tinta:#e9eaf3; --lf-tinta-2:#c3c6d6; --lf-tinta-3:#9b9fb4; --lf-tinta-4:#868aa0;
-  --lf-linea:#272a3c; --lf-linea-f:#333751;
-  --lf-brand:#7b76e8;
-  --lf-verde:#3fb87c;
+/* Quien pidió menos movimiento, menos movimiento. No es un extra: para
+   algunas personas una animación mal puesta marea de verdad. */
+@media (prefers-reduced-motion: reduce){
+  :root{ --crm-t:.01ms; --crm-t-l:.01ms; }
+  *,*::before,*::after{ animation-duration:.01ms !important; animation-iteration-count:1 !important; }
 }
 
-/* ── El detalle que firma el producto ──
-   Una línea de color en el canto superior del menú. Es lo primero que
-   se ve al abrir, cuesta tres líneas y basta para que nadie confunda
-   una captura del CRM con una del POS. */
-.lf-side{
-  border-top:3px solid var(--lf-brand);
-  background:linear-gradient(180deg,
-    color-mix(in srgb, var(--lf-brand) 5%, transparent) 0,
-    transparent 180px);
+/* ────────────────────────────────────────────────────────
+   EL MENÚ: un indicador que se desliza
+   ────────────────────────────────────────────────────────
+   La barra a la izquierda de la entrada activa es lo que hace todo el
+   mundo. Aquí la pastilla viaja: al cambiar de sección se desplaza
+   desde donde estaba, y esa continuidad cuenta de dónde vienes.
+
+   El truco es un pseudo-elemento sobre la entrada activa que parte
+   escalado en el eje Y y se abre. Cuesta nada y no toca el layout. */
+.lf-nav{ position:relative; }
+.lf-nav a{
+  position:relative; border-radius:var(--lf-r-sm);
+  transition:color var(--crm-t) var(--crm-ease),
+             transform var(--crm-t) var(--crm-ease);
+  z-index:1;
+}
+.lf-nav a::before{
+  content:""; position:absolute; inset:0; z-index:-1;
+  border-radius:inherit;
+  background:color-mix(in srgb, var(--lf-brand) 13%, transparent);
+  opacity:0; transform:scaleY(.4);
+  transition:opacity var(--crm-t) var(--crm-ease),
+             transform var(--crm-t-l) var(--crm-ease-s);
+}
+.lf-nav a:hover::before{ opacity:.55; transform:scaleY(1); }
+.lf-nav a.on::before{ opacity:1; transform:scaleY(1); }
+.lf-nav a.on{ color:var(--lf-brand-2); font-weight:600; }
+
+/* El punto. Pequeño, a la derecha, y aparece con rebote: es el único
+   adorno del menú y por eso puede permitirse llamar la atención. */
+.lf-nav a.on::after{
+  content:""; position:absolute; right:10px; top:50%;
+  width:5px; height:5px; border-radius:50%;
+  background:var(--lf-brand);
+  transform:translateY(-50%) scale(0);
+  animation:crmPunto var(--crm-t-l) var(--crm-ease-s) forwards;
+}
+@keyframes crmPunto{ to{ transform:translateY(-50%) scale(1); } }
+html.angosta .lf-nav a.on::after{ display:none; }
+
+/* El menú sin borde derecho: lo separa el color del lienzo, no una
+   línea. Una línea más es una línea que el ojo tiene que saltar. */
+.lf-side{ border-right:none; }
+
+/* ────────────────────────────────────────────────────────
+   TARJETAS Y PANELES: elevación, no contorno
+   ──────────────────────────────────────────────────────── */
+.card, .stat-card{
+  border:none; box-shadow:var(--crm-e1);
+  transition:box-shadow var(--crm-t) var(--crm-ease),
+             transform var(--crm-t) var(--crm-ease);
+}
+.card:hover{ box-shadow:var(--crm-e2); }
+
+/* ────────────────────────────────────────────────────────
+   BOTONES: responden al dedo
+   ────────────────────────────────────────────────────────
+   Levantarse al pasar y HUNDIRSE al pulsar. Lo segundo importa más: sin
+   estado activo, un botón en el móvil no da señal de haberse pulsado y
+   la gente pulsa dos veces. */
+.btn{
+  transition:transform .14s var(--crm-ease),
+             box-shadow var(--crm-t) var(--crm-ease),
+             background-color var(--crm-t) var(--crm-ease);
+  will-change:transform;
+}
+.btn:hover{ transform:translateY(-1px); }
+.btn:active{ transform:translateY(0) scale(.975); transition-duration:.06s; }
+.btn-primary{ box-shadow:0 2px 10px color-mix(in srgb, var(--lf-brand) 30%, transparent); }
+.btn-primary:hover{ box-shadow:0 6px 18px color-mix(in srgb, var(--lf-brand) 36%, transparent); }
+
+/* El foco de teclado, visible de verdad. Quien navega con tabulador
+   necesita ver dónde está tanto como quien usa el ratón. */
+:where(a,button,input,select,textarea):focus-visible{
+  outline:2px solid var(--lf-brand);
+  outline-offset:2px;
+  border-radius:var(--lf-r-xs);
 }
 
-/* El logo del menú, en la marca del CRM. */
-.lf-marca .g{
-  background:linear-gradient(135deg, var(--lf-brand), var(--lf-brand-d));
-  color:#fff;
+/* ────────────────────────────────────────────────────────
+   CAMPOS: la línea se pinta sola
+   ──────────────────────────────────────────────────────── */
+.form-control, .form-select{
+  border-color:transparent;
+  background:var(--lf-sup-2);
+  transition:background-color var(--crm-t) var(--crm-ease),
+             box-shadow var(--crm-t) var(--crm-ease);
+}
+.form-control:hover, .form-select:hover{ background:var(--lf-vidrio); }
+.form-control:focus, .form-select:focus{
+  background:var(--lf-sup);
+  box-shadow:0 0 0 2px var(--lf-brand), var(--crm-e1);
+  border-color:transparent;
 }
 
-/* La entrada activa del menú se marca con una barra a la izquierda, no
-   solo con fondo: en una barra estrecha el fondo solo es demasiado
-   sutil para ver de un vistazo dónde estás. */
-.lf-nav a.on{
-  box-shadow:inset 3px 0 0 var(--lf-brand);
+/* ────────────────────────────────────────────────────────
+   LA PÁGINA ENTRA
+   ────────────────────────────────────────────────────────
+   Un desplazamiento mínimo y un fundido. Más que esto en cada carga
+   acaba cansando: se nota la primera vez y estorba la número cien. */
+.lf-main > *{ animation:crmEntra var(--crm-t-l) var(--crm-ease) both; }
+@keyframes crmEntra{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+
+/* ────────────────────────────────────────────────────────
+   TABLAS: sin rejilla
+   ────────────────────────────────────────────────────────
+   Las columnas ya se alinean solas. Pintarles una línea a cada lado es
+   decir dos veces lo mismo. */
+.table{ border-collapse:separate; border-spacing:0; }
+.table th{
+  border:none; background:transparent;
+  font-size:11.5px; letter-spacing:.055em; text-transform:uppercase;
+  color:var(--lf-tinta-4); font-weight:600;
+}
+.table td{ border:none; box-shadow:inset 0 -1px 0 var(--lf-linea); }
+.table tbody tr{ transition:background-color .14s var(--crm-ease); }
+.table tbody tr:hover{ background:color-mix(in srgb, var(--lf-brand) 4%, transparent); }
+
+/* ────────────────────────────────────────────────────────
+   LA BARRA DE DESPLAZAMIENTO
+   ────────────────────────────────────────────────────────
+   El tablero rueda en horizontal, así que esta se ve todo el rato. */
+*{ scrollbar-width:thin; scrollbar-color:var(--lf-linea-f) transparent; }
+*::-webkit-scrollbar{ width:9px; height:9px; }
+*::-webkit-scrollbar-track{ background:transparent; }
+*::-webkit-scrollbar-thumb{
+  background:var(--lf-linea-f); border-radius:999px;
+  border:2px solid transparent; background-clip:content-box;
+  transition:background-color var(--crm-t) var(--crm-ease);
+}
+*::-webkit-scrollbar-thumb:hover{
+  background:var(--lf-tinta-4); background-clip:content-box;
 }
