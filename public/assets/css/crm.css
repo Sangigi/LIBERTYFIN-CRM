@@ -187,3 +187,239 @@ html.angosta .lf-nav a.on::after{ display:none; }
 *::-webkit-scrollbar-thumb:hover{
   background:var(--lf-tinta-4); background-clip:content-box;
 }
+
+/* ════════════════════════════════════════════════════════
+   EL CHASIS: otro producto, no otro color
+   ════════════════════════════════════════════════════════
+
+   Hasta aquí solo se habían cambiado tonos y movimiento, y el esqueleto
+   seguía siendo el del POS: menú ancho y claro, panel redondeado
+   flotando sobre el lienzo, título grande arriba. Con eso, dos capturas
+   puestas lado a lado se confunden.
+
+   Tres cambios de estructura, no de estilo:
+
+   1. EL MENÚ ES UNA COLUMNA OSCURA Y ESTRECHA que se abre al acercar el
+      ratón, por encima del contenido y sin empujarlo. En el POS el menú
+      es parte de la página; aquí es una herramienta que aparece y se
+      quita. El contraste oscuro-claro es además lo que más distingue
+      dos interfaces de un vistazo, más que cualquier tono de verde.
+
+   2. EL CONTENIDO LLENA LA PANTALLA. Nada de panel redondeado con
+      márgenes: el tablero llega hasta el borde y rueda por su cuenta.
+      Un embudo de siete columnas no se mira dentro de una tarjeta.
+
+   3. EL TÍTULO SE ENCOGE a una barra fina. En el POS el encabezado
+      ocupa tres líneas; aquí es una franja donde caben el nombre, la
+      búsqueda y los botones, y lo demás es trabajo.
+   ════════════════════════════════════════════════════════ */
+
+:root{
+  --crm-rail:66px;        /* la columna en reposo */
+  --crm-rail-abierto:236px;
+  --crm-oscuro:#121a16;   /* el verde de la casa, casi negro */
+  --crm-oscuro-2:#1a2520;
+  --lf-side-w:var(--crm-rail);
+  --lf-head-h:54px;
+}
+
+/* ── La columna ── */
+.lf-side{
+  position:fixed; top:0; left:0; bottom:0; z-index:50;
+  width:var(--crm-rail);
+  background:var(--crm-oscuro);
+  border:none; border-radius:0;
+  padding:0; overflow:visible;
+  transition:width .26s var(--crm-ease);
+  will-change:width;
+}
+/* Se abre al acercarse, y vuelve sola. Sin clic: un menú que hay que
+   abrir y cerrar a mano se queda abierto, y entonces es un menú ancho. */
+.lf-side:hover,
+.lf-side:focus-within{ width:var(--crm-rail-abierto); box-shadow:var(--crm-e3); }
+
+/* Quien prefiera tenerlo fijo abierto usa el botón de siempre: la clase
+   `angosta` ahora significa «clavado estrecho», sin apertura al pasar. */
+html.angosta .lf-side:hover,
+html.angosta .lf-side:focus-within{ width:var(--crm-rail); box-shadow:none; }
+
+/* El contenido NO se mueve cuando el menú se abre: el menú pasa por
+   encima. Empujar la página entera para leer un nombre es la razón por
+   la que los menús que se expanden suelen molestar. */
+.lf-main{
+  margin-left:var(--crm-rail);
+  background:var(--lf-lienzo);
+  border-radius:0;
+  min-height:100vh; min-height:100dvh;
+  display:flex; flex-direction:column;
+}
+
+/* ── Los textos del menú aparecen al abrirse ── */
+.lf-side .lf-nav a > span,
+.lf-side .sec,
+.lf-side .lf-marca > span:not(.g),
+.lf-side .lf-ucard b,
+.lf-side .lf-ucard small,
+.lf-side .lf-ang-txt{
+  opacity:0; transform:translateX(-6px);
+  transition:opacity .18s var(--crm-ease), transform .22s var(--crm-ease);
+  white-space:nowrap;
+}
+.lf-side:hover .lf-nav a > span,
+.lf-side:hover .sec,
+.lf-side:hover .lf-marca > span:not(.g),
+.lf-side:hover .lf-ucard b,
+.lf-side:hover .lf-ucard small,
+.lf-side:hover .lf-ang-txt,
+.lf-side:focus-within .lf-nav a > span,
+.lf-side:focus-within .sec{ opacity:1; transform:none; }
+
+html.angosta .lf-side:hover .lf-nav a > span,
+html.angosta .lf-side:hover .sec,
+html.angosta .lf-side:hover .lf-ucard b,
+html.angosta .lf-side:hover .lf-ucard small{ opacity:0; }
+
+/* ── Sobre oscuro, los colores cambian ── */
+.lf-side .lf-nav a{
+  color:#9fb0a8; padding:11px 0 11px 22px; margin:1px 10px; gap:14px;
+  justify-content:flex-start; overflow:hidden;
+}
+.lf-side .lf-nav a svg{ flex:0 0 auto; margin-left:-1px; transition:transform .2s var(--crm-ease-s); }
+.lf-side .lf-nav a:hover{ color:#fff; }
+.lf-side .lf-nav a:hover svg{ transform:scale(1.14); }
+.lf-side .lf-nav a::before{ background:rgba(255,255,255,.07); }
+.lf-side .lf-nav a.on{ color:#fff; }
+.lf-side .lf-nav a.on::before{ background:color-mix(in srgb, var(--lf-brand) 26%, transparent); }
+/* La marca de la sección activa: una barra corta y redonda pegada al
+   canto izquierdo. No cruza la entrada entera, solo la señala. */
+.lf-side .lf-nav a.on::after{
+  content:""; right:auto; left:0; top:50%;
+  width:3px; height:17px; border-radius:0 3px 3px 0;
+  background:var(--lf-brand);
+  transform:translateY(-50%) scaleY(0);
+  transform-origin:center;
+  animation:crmMarca .3s var(--crm-ease-s) forwards;
+}
+@keyframes crmMarca{ to{ transform:translateY(-50%) scaleY(1); } }
+html.angosta .lf-side .lf-nav a.on::after{ display:block; }
+
+.lf-side .sec{ color:#5e716a; font-size:10.5px; letter-spacing:.08em; padding-left:24px; }
+.lf-side .lf-marca{ padding:16px 0 14px 20px; }
+.lf-side .lf-marca .g{
+  background:linear-gradient(135deg, var(--lf-brand), var(--lf-brand-d));
+  color:#fff; box-shadow:0 4px 14px color-mix(in srgb, var(--lf-brand) 40%, transparent);
+}
+.lf-side .lf-marca b{ color:#fff; }
+.lf-side .lf-marca small{ color:#7d8f88; }
+.lf-side .lf-ucard{ border-color:rgba(255,255,255,.08); padding-left:20px; }
+.lf-side .lf-ucard b{ color:#e6ede9; }
+.lf-side .lf-ucard small{ color:#7d8f88; }
+.lf-side .lf-angosta{ color:#7d8f88; border-top-color:rgba(255,255,255,.08); padding-left:24px; }
+.lf-side .lf-angosta:hover{ color:#fff; }
+
+/* El nombre flotante del icono ya no hace falta: el menú se abre solo. */
+html.angosta .lf-nav a::after{ content:none; }
+
+/* ── La barra de arriba: una franja, no un encabezado ── */
+.lf-top{
+  position:sticky; top:0; z-index:30;
+  min-height:var(--lf-head-h); padding:0 26px;
+  background:color-mix(in srgb, var(--lf-lienzo) 86%, transparent);
+  backdrop-filter:blur(14px) saturate(1.4);
+  box-shadow:inset 0 -1px 0 var(--lf-linea);
+  flex-wrap:nowrap;
+}
+.lf-top-tit h1{
+  font-size:15px; font-weight:650; letter-spacing:-.015em; gap:9px; margin:0;
+}
+/* El subtítulo pasa a la misma línea, en gris: ocupaba un renglón para
+   decir algo que se lee de paso. */
+.lf-top-tit{ display:flex; align-items:baseline; gap:12px; }
+.lf-top-tit p{ margin:0; font-size:12.5px; color:var(--lf-tinta-4); white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; }
+@media(max-width:720px){ .lf-top-tit p{ display:none; } }
+
+/* El cuerpo ocupa lo que queda y rueda por su cuenta. */
+.lf-main > :not(.lf-top){ padding-left:26px; padding-right:26px; }
+.lf-main > .lf-cont, .lf-main > main{ flex:1; }
+
+@media(max-width:860px){
+  .lf-side{ position:fixed; width:var(--crm-rail-abierto); transform:translateX(-100%);
+    transition:transform .26s var(--crm-ease); }
+  .lf-side.abierto{ transform:none; }
+  .lf-main{ margin-left:0; }
+  .lf-top{ padding:0 14px; }
+  .lf-main > :not(.lf-top){ padding-left:14px; padding-right:14px; }
+}
+
+/* ════════════════════════════════════════════════════════
+   LA CAPA DE MOVIMIENTO (va con crm-movimiento.js)
+   ════════════════════════════════════════════════════════ */
+
+/* ── La onda al pulsar ── */
+.crm-onda{
+  position:absolute; border-radius:50%; pointer-events:none;
+  background:currentColor; opacity:.18; transform:scale(0);
+  animation:crmOnda .55s var(--crm-ease) forwards;
+}
+@keyframes crmOnda{ to{ transform:scale(1); opacity:0; } }
+
+/* ── Lo que aparece al bajar ──
+   El estado de partida va en CSS y no en JS: si el script tarda, el
+   contenido se ve igual, solo sin animar. Al revés —esconderlo con JS—
+   dejaría la página en blanco mientras carga. */
+.crm-aparece{
+  opacity:0; transform:translateY(14px);
+  transition:opacity .42s var(--crm-ease), transform .42s var(--crm-ease);
+}
+.crm-aparece.crm-visible{ opacity:1; transform:none; }
+
+/* ── Los avisos flotantes ── */
+.crm-avisos{
+  position:fixed; right:20px; bottom:20px; z-index:200;
+  display:flex; flex-direction:column; gap:9px; pointer-events:none;
+  max-width:min(380px, calc(100vw - 40px));
+}
+.crm-aviso{
+  pointer-events:auto;
+  background:var(--crm-oscuro); color:#e9efec;
+  padding:12px 18px; border-radius:var(--lf-r-sm);
+  font-size:13.5px; line-height:1.4; box-shadow:var(--crm-e3);
+  animation:crmAvisoEntra .3s var(--crm-ease-s) both;
+  display:flex; align-items:center; gap:10px;
+}
+/* La barra de color a la izquierda es lo único que distingue bien y mal:
+   el texto ya lo dice, el color lo dice antes de leerlo. */
+.crm-aviso::before{
+  content:""; width:3px; align-self:stretch; border-radius:999px;
+  background:var(--lf-brand); flex:0 0 auto; margin:-2px 2px -2px 0;
+}
+.crm-aviso.malo::before{ background:var(--lf-rojo); }
+.crm-aviso.yendose{ animation:crmAvisoSale .26s var(--crm-ease) forwards; }
+@keyframes crmAvisoEntra{ from{ opacity:0; transform:translateY(14px) scale(.96); }
+                          to{ opacity:1; transform:none; } }
+@keyframes crmAvisoSale{ to{ opacity:0; transform:translateX(18px); } }
+
+/* ── El paso de una página a otra ──
+   Muy corto a propósito: 130 ms es suficiente para que el ojo no vea el
+   parpadeo en blanco, y poco para que nadie sienta que espera. */
+body{ transition:opacity .13s var(--crm-ease); }
+body.crm-saliendo{ opacity:0; }
+
+/* ── El esqueleto mientras carga ──
+   Para cuando el panel lateral trae la ficha. Un hueco gris que respira
+   dice «viene en camino»; uno quieto dice «se rompió». */
+.crm-hueso{
+  background:linear-gradient(90deg,
+    var(--lf-vidrio) 25%, var(--lf-sup-2) 37%, var(--lf-vidrio) 63%);
+  background-size:400% 100%;
+  animation:crmHueso 1.3s ease-in-out infinite;
+  border-radius:var(--lf-r-xs); color:transparent !important;
+}
+@keyframes crmHueso{ from{ background-position:100% 0; } to{ background-position:0 0; } }
+
+@media (prefers-reduced-motion: reduce){
+  .crm-aparece{ opacity:1; transform:none; }
+  body.crm-saliendo{ opacity:1; }
+  .crm-hueso{ animation:none; }
+}

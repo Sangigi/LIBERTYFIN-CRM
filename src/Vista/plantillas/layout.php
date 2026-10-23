@@ -93,6 +93,7 @@ $lfQuien = \LibertyFin\Controlador\PushControlador::quien(\LibertyFin\Servicio\S
 <script src="/assets/js/lf-chat.js?v=<?= is_file($chatJs) ? filemtime($chatJs) : '1' ?>" defer></script>
 <script src="/assets/js/lf-tablas.js?v=<?= (int)@filemtime(__DIR__ . '/../../../public/assets/js/lf-tablas.js') ?>" defer></script>
 <script src="/assets/js/shared.js?v=<?= (int)@filemtime(__DIR__ . '/../../../public/assets/js/shared.js') ?>" defer></script>
+<script src="/assets/js/crm-movimiento.js?v=<?= (int)@filemtime(__DIR__ . '/../../../public/assets/js/crm-movimiento.js') ?>" defer></script>
 <?php /* Esta línea NO puede ir con `defer`: pone el ancho del menú, y si
    llega después de pintar se ve el salto de 240px a 62px en cada página.
    Es lo único que se ejecuta aquí, y por eso cabe suelto. */ ?>
